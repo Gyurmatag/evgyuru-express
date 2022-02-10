@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 const projectRoutes = require('./routes/projects');
+const courseRoutes = require('./routes/courses');
 
 const index = express();
 
@@ -21,6 +22,7 @@ index.use((req, res, next) => {
 });
 
 index.use('/project', projectRoutes);
+index.use('/course', courseRoutes);
 
 index.use((error, req, res, next) => {
     console.log(error);
