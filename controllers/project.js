@@ -17,7 +17,6 @@ exports.getProjectList = (req, res, next) => {
                 .sort({createdAt: 'descending'});
         })
         .then(projects => {
-            console.log(projects)
             res.status(200).json({
                 message: 'Fetched projects successfully.',
                 projects: projects,

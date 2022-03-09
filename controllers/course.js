@@ -15,7 +15,6 @@ exports.getCourseList = (req, res, next) => {
                 .sort({createdAt: 'descending'});
         })
         .then(courses => {
-            console.log(courses)
             res.status(200).json({
                 message: 'Fetched courses successfully.',
                 courses: courses,
