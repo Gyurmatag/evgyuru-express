@@ -1,51 +1,36 @@
-const db = require("../models");
-const ROLES = db.ROLES;
-const User = db.user;
+const asyncHandler = require('express-async-handler')
+const db = require("../models")
+const CustomError = require("../utils/CustomError")
+const ROLES = db.ROLES
+const User = db.user
 
-checkDuplicateUsernameOrEmail = (req, res, next) => {
-    // Username
-    User.findOne({
-        username: req.body.username
-    }).exec((err, user) => {
-        if (err) {
-            res.status(500).send({ message: err });
-            return;
-        }
-        if (user) {
-            res.status(400).send({ message: "Failed! Username is already in use!" });
-            return;
-        }
-        // Email
-        User.findOne({
-            email: req.body.email
-        }).exec((err, user) => {
-            if (err) {
-                res.status(500).send({ message: err });
-                return;
-            }
-            if (user) {
-                res.status(400).send({ message: "Failed! Email is already in use!" });
-                return;
-            }
-            next();
-        });
-    });
-};
+checkDuplicateUsernameOrEmail =  asyncHandler(async (req, res, next) => {
+    const userByUsername = await User.findOne({ username: req.body.username })
+    if (userByUsername) {
+        throw new CustomError('Username already taken.', 400)
+    }
+
+    const userByEmail = await User.findOne({ email: req.body.email })
+    if (userByEmail) {
+        throw new CustomError('Email already taken.', 400)
+    }
+
+    next()
+})
+
 checkRolesExisted = (req, res, next) => {
     if (req.body.roles) {
-        for (let i = 0; i < req.body.roles.length; i++) {
-            if (!ROLES.includes(req.body.roles[i])) {
-                res.status(400).send({
-                    message: `Failed! Role ${req.body.roles[i]} does not exist!`
-                });
-                return;
+        for (const role of req.body.roles) {
+            if (!ROLES.includes(role)) {
+                throw new CustomError(`Failed! Role ${req.body.roles[i]} does not exist!`, 400)
             }
         }
     }
-    next();
-};
+
+    next()
+}
 const verifySignUp = {
     checkDuplicateUsernameOrEmail,
     checkRolesExisted
-};
-module.exports = verifySignUp;
+}
+module.exports = verifySignUp

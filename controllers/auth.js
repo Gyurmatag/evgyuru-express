@@ -1,73 +1,52 @@
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-const config = require("../config");
-const db = require("../models");
-const User = db.user;
-const Role = db.role;
+const asyncHandler = require("express-async-handler")
+const jwt = require("jsonwebtoken")
+const bcrypt = require("bcryptjs")
+const config = require("../config")
+const db = require("../models")
+const CustomError = require("../utils/CustomError")
+const User = db.user
+const Role = db.role
 
-exports.signup = (req, res) => {
+exports.signup =  asyncHandler(async (req, res) => {
+    const role = await Role.findOne({ name: 'user' } )
     const user = new User({
         username: req.body.username,
         email: req.body.email,
-        password: bcrypt.hashSync(req.body.password, 8)
-    });
-    user.save((err, user) => {
-        if (err) {
-            res.status(500).send({ message: err });
-            return;
-        }
-        Role.findOne({ name: "user" }, (err, role) => {
-            if (err) {
-                res.status(500).send({ message: err });
-                return;
-            }
-            user.roles = [role._id];
-            user.save(err => {
-                if (err) {
-                    res.status(500).send({ message: err });
-                    return;
-                }
-                res.send({ message: "User was registered successfully!" });
-            });
-        });
-    });
-};
-exports.signin = (req, res) => {
-    User.findOne({
-        username: req.body.username
+        password: bcrypt.hashSync(req.body.password, 8),
+        roles: [role._id]
     })
-        .populate("roles", "-__v")
-        .exec((err, user) => {
-            if (err) {
-                res.status(500).send({ message: err });
-                return;
-            }
-            if (!user) {
-                return res.status(404).send({ message: "User Not found." });
-            }
-            const passwordIsValid = bcrypt.compareSync(
-                req.body.password,
-                user.password
-            );
-            if (!passwordIsValid) {
-                return res.status(401).send({
-                    accessToken: null,
-                    message: "Invalid Password!"
-                });
-            }
-            const token = jwt.sign({id: user.id}, config.AUTH_SECRET, {
-                expiresIn: 86400 // 24 hours
-            });
-            const authorities = [];
-            for (let i = 0; i < user.roles.length; i++) {
-                authorities.push("ROLE_" + user.roles[i].name.toUpperCase());
-            }
-            res.status(200).send({
-                id: user._id,
-                username: user.username,
-                email: user.email,
-                roles: authorities,
-                accessToken: token
-            });
-        });
-};
+    await user.save()
+    res.status(201).json({ message: 'User was registered successfully!' })
+})
+
+exports.signin = asyncHandler(async (req, res) => {
+    const user = await User.findOne({ username: req.body.username }).populate('roles')
+
+    if (!user) {
+        throw new CustomError('User not Found.', 404)
+    }
+
+    const passwordIsValid = bcrypt.compareSync(
+        req.body.password,
+        user.password
+    )
+    if (!passwordIsValid) {
+        throw new CustomError('Invalid password.', 401)
+    }
+
+    const token = jwt.sign({id: user.id}, config.AUTH_SECRET, {
+        expiresIn: 86400 // 24 hours
+    })
+    const authorities = []
+    for (const role of user.roles) {
+        authorities.push("ROLE_" + role.name.toUpperCase())
+    }
+
+    res.status(200).json({
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        roles: authorities,
+        accessToken: token
+    })
+})

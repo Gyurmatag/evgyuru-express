@@ -1,11 +1,11 @@
-const express = require('express');
+const express = require('express')
 
-const courseController = require('../controllers/course');
+const courseController = require('../controllers/course')
 
-const router = express.Router();
+const router = express.Router()
 
-router.get('/courses', courseController.getCourseList);
+router.get('/courses', courseController.getCourseList)
 
-router.get('/:courseId', courseController.getCourse);
+router.get('/:courseId', courseController.getCourse)
 
-module.exports = router;
+module.exports = router

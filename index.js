@@ -1,49 +1,52 @@
-const express = require('express');
+const express = require('express')
 const dotEnv = require('dotenv')
-const bodyParser = require('body-parser');
-const cors = require("cors");
+const bodyParser = require('body-parser')
+const cors = require("cors")
 
-dotEnv.config();
+dotEnv.config()
 const config = require('./config')
 
-const projectRoutes = require('./routes/projects');
-const courseRoutes = require('./routes/courses');
-const authRoutes = require('./routes/auth');
+const projectRoutes = require('./routes/projects')
+const courseRoutes = require('./routes/courses')
+const authRoutes = require('./routes/auth')
+const reservationRoutes = require('./routes/reservation')
 
-const index = express();
+const index = express()
 
 const corsOptions = {
-    origin: "http://localhost:8081"
-};
+    origin: config.FRONTEND_CORS_ORIGIN
+}
 
-index.use(bodyParser.json());
+index.use(bodyParser.json())
 
-index.use(cors(corsOptions));
+index.use(cors(corsOptions))
 
 index.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader(
         'Access-Control-Allow-Methods',
         'OPTIONS, GET, POST, PUT, PATCH, DELETE'
-    );
-    res.setHeader('Access-Control-Allow-Headers', 'x-access-token, Origin, Content-Type, Accept');
-    next();
-});
+    )
+    res.setHeader('Access-Control-Allow-Headers', 'x-access-token, Origin, Content-Type, Accept')
+    next()
+})
 
-index.use('/project', projectRoutes);
-index.use('/course', courseRoutes);
-index.use('/auth', authRoutes);
+index.use('/project', projectRoutes)
+index.use('/course', courseRoutes)
+index.use('/auth', authRoutes)
+index.use('/reservation', reservationRoutes)
 
 index.use((error, req, res, next) => {
-    console.log(error);
-    const status = error.statusCode || 500;
-    const message = error.message;
-    const data = error.data;
-    res.status(status).json({ message: message, data: data });
-});
+    console.log(error)
+    const status = error.statusCode || 500
+    const message = error.message
+    const data = error.data
+    res.status(status).json({ message, data })
+})
 
-const db = require("./models");
-const Role = db.role;
+const db = require("./models")
+const asyncHandler = require("express-async-handler")
+const Role = db.role
 
 db.mongoose
     .connect(
@@ -51,43 +54,19 @@ db.mongoose
     )
     .then(_ => {
         console.log("App started")
-        initial();
-        index.listen(config.PORT);
+        initial()
+        index.listen(config.PORT)
     })
-    .catch(err => console.log(err));
+    .catch(err => console.log(err))
 
-function initial() {
-    Role.estimatedDocumentCount((err, count) => {
-        if (!err && count === 0) {
-            new Role({
-                name: "user"
-            }).save(err => {
-                if (err) {
-                    console.log("error", err);
-                }
+// TODO: tesztelni, hogy működik-e
+const initial = asyncHandler(async () => {
+    const rolesLength = db.ROLES.length
+    const dbRolesLength = await Role.find().countDocuments()
 
-                console.log("Added 'user' to roles collection.");
-            });
-
-            new Role({
-                name: "moderator"
-            }).save(err => {
-                if (err) {
-                    console.log("error", err);
-                }
-
-                console.log("Added 'moderator' to roles collection.");
-            });
-
-            new Role({
-                name: "admin"
-            }).save(err => {
-                if (err) {
-                    console.log("error", err);
-                }
-
-                console.log("Added 'admin' to roles collection.");
-            });
-        }
-    });
-}
+    if (rolesLength !== dbRolesLength) {
+        await new Role({ name: 'user' }).save()
+        await new Role({ name: 'moderator' }).save()
+        await new Role({ name: 'admin' }).save()
+    }
+})

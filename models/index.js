@@ -1,15 +1,15 @@
-const mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
+const mongoose = require('mongoose')
 
-const db = {};
+const db = {
+    mongoose,
 
-db.mongoose = mongoose;
+    user: require('./user'),
+    role: require('./role'),
+    project: require('./project'),
+    course: require('./course'),
+    reservation: require('./reservation'),
 
-db.user = require("./user");
-db.role = require("./role");
-db.project = require("./project");
-db.course = require("./course");
+    ROLES: ['user', 'moderator', 'admin']
+}
 
-db.ROLES = ["user", "moderator", "admin"];
-
-module.exports = db;
+module.exports = db
