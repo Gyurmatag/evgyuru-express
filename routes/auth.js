@@ -7,4 +7,6 @@ router.post('/signup', [verifySignUp.checkDuplicateUsernameOrEmail, verifySignUp
 
 router.post('/signin', authController.signin)
 
+router.get('/is-email-already-registered', authController.isEmailAlreadyRegistered)
+
 module.exports = router

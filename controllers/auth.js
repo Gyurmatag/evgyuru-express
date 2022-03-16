@@ -50,3 +50,16 @@ exports.signin = asyncHandler(async (req, res) => {
         accessToken: token
     })
 })
+
+exports.isEmailAlreadyRegistered = asyncHandler(async (req, res) => {
+    const user = await User.findOne({ email: req.query.email })
+    let isEmailAlreadyRegistered = false
+
+    if (user) {
+        isEmailAlreadyRegistered = true
+    }
+
+    res.status(200).json({
+        isEmailAlreadyRegistered
+    })
+})
