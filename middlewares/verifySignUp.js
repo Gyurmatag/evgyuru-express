@@ -4,12 +4,7 @@ const CustomError = require("../utils/CustomError")
 const ROLES = db.ROLES
 const User = db.user
 
-checkDuplicateUsernameOrEmail =  asyncHandler(async (req, res, next) => {
-    const userByUsername = await User.findOne({ username: req.body.username })
-    if (userByUsername) {
-        throw new CustomError('Username already taken.', 400)
-    }
-
+checkDuplicateEmail = asyncHandler(async (req, res, next) => {
     const userByEmail = await User.findOne({ email: req.body.email })
     if (userByEmail) {
         throw new CustomError('Email already taken.', 400)
@@ -30,7 +25,7 @@ checkRolesExisted = (req, res, next) => {
     next()
 }
 const verifySignUp = {
-    checkDuplicateUsernameOrEmail,
+    checkDuplicateEmail,
     checkRolesExisted
 }
 module.exports = verifySignUp

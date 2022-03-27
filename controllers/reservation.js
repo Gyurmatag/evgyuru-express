@@ -14,7 +14,7 @@ exports.saveReservation = asyncHandler(async (req, res) => {
     const duplicatedReservation = await Reservation
         .findOne({
             course: req.body.courseId,
-            user: req.userId
+            user: req.user._id
         })
 
     if (duplicatedReservation) {
@@ -24,8 +24,54 @@ exports.saveReservation = asyncHandler(async (req, res) => {
     const reservation = new Reservation({
         comment: req.body.comment,
         course: course._id,
-        user: req.userId,
+        user: req.user._id,
     })
     await reservation.save()
-    res.status(201).json({ message: 'Reservation was saved successfully!' })
+
+    const applicant = req.user
+    applicant.reservations.push(reservation)
+    await applicant.save()
+
+    res.status(201).json({ message: 'Reservation was saved successfully!', reservation })
+})
+
+exports.deleteReservation = asyncHandler(async (req, res) => {
+    const toDeleteReservationId = req.params.reservationId
+    const reservation = await Reservation.findById(req.params.reservationId)
+
+    if (!reservation) {
+        throw new CustomError('Reservation nof found.', 404)
+    }
+
+    const currentLoggedInUser = req.user
+
+    if (reservation.user.toString() !== currentLoggedInUser._id.toString()) {
+        throw new CustomError('Not authorized.', 403)
+    }
+
+    await Reservation.findByIdAndRemove(toDeleteReservationId);
+
+    currentLoggedInUser.reservations.pull(toDeleteReservationId)
+    await currentLoggedInUser.save()
+
+    res.status(200).json({ message: 'Reservation was deleted successfully!' })
+})
+
+exports.getLoggedInUserReservationList =  asyncHandler(async (req, res) => {
+    const currentPage = +req.query.page || 1
+    const perPage = +req.query.limit || 5
+
+    const reservationCount = await Reservation.find({ user: req.user._id }).countDocuments()
+    const reservations = await Reservation
+        .find({ user: req.user._id })
+        .skip((currentPage - 1) * perPage)
+        .limit(perPage)
+        .sort({ createdAt: 'descending' })
+        .populate('course')
+
+    res.status(200).json({
+        message: 'Fetched user reservations successfully.',
+        reservations,
+        totalItems: reservationCount
+    })
 })

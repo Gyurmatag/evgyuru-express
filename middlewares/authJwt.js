@@ -14,7 +14,7 @@ verifyToken = asyncHandler(async (req, res, next) => {
     // Itt azért kell try-catch, hogy tudjuk specifikus Status Code-ot küldeni vissza (401).
     try {
         const decodedToken = await jwt.verify(token, config.AUTH_SECRET)
-        req.userId = decodedToken.id
+        req.user = await User.findById(decodedToken._id)
     } catch (err) {
         throw new CustomError(err.message, 401)
     }

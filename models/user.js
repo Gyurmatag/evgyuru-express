@@ -3,11 +3,15 @@ const Schema = mongoose.Schema
 
 const userSchema = new Schema(
     {
-        username: {
+        email: {
             type: String,
             required: true
         },
-        email: {
+        lastName: {
+            type: String,
+            required: true
+        },
+        firstName: {
             type: String,
             required: true
         },
@@ -21,10 +25,10 @@ const userSchema = new Schema(
                 ref: "Role"
             }
         ],
-        courses: [
+        reservations: [
             {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: "Course"
+                ref: "Reservation"
             }
         ],
     },

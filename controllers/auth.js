@@ -10,8 +10,9 @@ const Role = db.role
 exports.signup =  asyncHandler(async (req, res) => {
     const role = await Role.findOne({ name: 'user' } )
     const user = new User({
-        username: req.body.username,
         email: req.body.email,
+        lastName: req.body.lastName,
+        firstName: req.body.firstName,
         password: bcrypt.hashSync(req.body.password, 8),
         roles: [role._id]
     })
@@ -20,7 +21,7 @@ exports.signup =  asyncHandler(async (req, res) => {
 })
 
 exports.signin = asyncHandler(async (req, res) => {
-    const user = await User.findOne({ username: req.body.username }).populate('roles')
+    const user = await User.findOne({ email: req.body.email }).populate(['roles', 'reservations'])
 
     if (!user) {
         throw new CustomError('User not Found.', 404)
@@ -34,7 +35,7 @@ exports.signin = asyncHandler(async (req, res) => {
         throw new CustomError('Invalid password.', 401)
     }
 
-    const token = jwt.sign({id: user.id}, config.AUTH_SECRET, {
+    const token = jwt.sign({_id: user.id}, config.AUTH_SECRET, {
         expiresIn: 86400 // 24 hours
     })
     const authorities = []
@@ -43,9 +44,11 @@ exports.signin = asyncHandler(async (req, res) => {
     }
 
     res.status(200).json({
-        id: user._id,
-        username: user.username,
+        _id: user._id,
         email: user.email,
+        lastName: user.lastName,
+        firstName: user.firstName,
+        reservations: user.reservations,
         roles: authorities,
         accessToken: token
     })
