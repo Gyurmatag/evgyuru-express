@@ -21,22 +21,22 @@ verifyToken = asyncHandler(async (req, res, next) => {
     next()
 })
 
-isAdmin = (req, res, next) => hasSpecificRole(req, res, next, "admin")
-isModerator = (req, res, next) => hasSpecificRole(req, res, next, "moderator")
+isAdmin = asyncHandler((req, res, next) => hasSpecificRole(req, res, next, "admin"))
+isModerator = asyncHandler((req, res, next) => hasSpecificRole(req, res, next, "moderator"))
 
-// TODO: tesztelni még kell
-const hasSpecificRole = asyncHandler( async(req, res, next, roleName) => {
-    const user = await User.findById(req.userId)
+const hasSpecificRole = async (req, res, next, roleName) => {
+    const user = await User.findById(req.user._id)
     const roles = await Role.find({ _id: { $in: user.roles } })
 
     for (const role of roles) {
         if (role.name === roleName) {
             next()
+            return
         }
     }
 
-    throw new CustomError(`Require ${roleName} Role!`, 403)
-})
+    throw new CustomError(`Requires ${roleName} Role!`, 403)
+}
 
 const authJwt = {
     verifyToken,

@@ -3,7 +3,7 @@ const Schema = mongoose.Schema
 
 const reservationSchema = new Schema(
     {
-        comment: {
+        childName: {
             type: String,
         },
         course: {

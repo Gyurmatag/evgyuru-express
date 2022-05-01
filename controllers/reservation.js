@@ -21,18 +21,18 @@ exports.saveReservation = asyncHandler(async (req, res) => {
         throw new CustomError('Reservation already saved for this course.', 409)
     }
 
-    const reservation = new Reservation({
-        comment: req.body.comment,
+    const reservationToSave = new Reservation({
+        childName: req.body.childName,
         course: course._id,
         user: req.user._id,
     })
-    await reservation.save()
+    const reservation = await (await reservationToSave.save()).populate('course')
 
     const applicant = req.user
     applicant.reservations.push(reservation)
     await applicant.save()
 
-    res.status(201).json({ message: 'Reservation was saved successfully!', reservation })
+    res.status(201).json(reservation)
 })
 
 exports.deleteReservation = asyncHandler(async (req, res) => {
@@ -52,6 +52,9 @@ exports.deleteReservation = asyncHandler(async (req, res) => {
     await Reservation.findByIdAndRemove(toDeleteReservationId);
 
     currentLoggedInUser.reservations.pull(toDeleteReservationId)
+    currentLoggedInUser.reservations = currentLoggedInUser.reservations.filter(
+        (reservation) => reservation._id !== toDeleteReservationId
+    );
     await currentLoggedInUser.save()
 
     res.status(200).json({ message: 'Reservation was deleted successfully!' })
@@ -71,6 +74,25 @@ exports.getLoggedInUserReservationList =  asyncHandler(async (req, res) => {
 
     res.status(200).json({
         message: 'Fetched user reservations successfully.',
+        reservations,
+        totalItems: reservationCount
+    })
+})
+
+exports.findReservations =  asyncHandler(async (req, res) => {
+    const currentPage = +req.query.page || 1
+    const perPage = +req.query.limit || 5
+
+    const reservationCount = await Reservation.find({ course: req.query.courseId }).countDocuments()
+    const reservations = await Reservation
+        .find({ course: req.query.courseId })
+        .skip((currentPage - 1) * perPage)
+        .limit(perPage)
+        .sort({ createdAt: 'descending' })
+        .populate([{ path: 'course'}, {path: 'user', select: { password: 0 }}])
+
+    res.status(200).json({
+        message: 'Fetched reservations successfully.',
         reservations,
         totalItems: reservationCount
     })

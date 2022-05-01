@@ -11,8 +11,9 @@ exports.signup =  asyncHandler(async (req, res) => {
     const role = await Role.findOne({ name: 'user' } )
     const user = new User({
         email: req.body.email,
-        lastName: req.body.lastName,
-        firstName: req.body.firstName,
+        fullName: req.body.fullName,
+        telephoneNumber: req.body.telephoneNumber,
+        address: req.body.address,
         password: bcrypt.hashSync(req.body.password, 8),
         roles: [role._id]
     })
@@ -46,8 +47,9 @@ exports.signin = asyncHandler(async (req, res) => {
     res.status(200).json({
         _id: user._id,
         email: user.email,
-        lastName: user.lastName,
-        firstName: user.firstName,
+        fullName: user.fullName,
+        telephoneNumber: user.telephoneNumber,
+        address: user.address,
         reservations: user.reservations,
         roles: authorities,
         accessToken: token
@@ -65,4 +67,27 @@ exports.isEmailAlreadyRegistered = asyncHandler(async (req, res) => {
     res.status(200).json({
         isEmailAlreadyRegistered
     })
+})
+
+exports.assignRoleToUser =  asyncHandler(async (req, res) => {
+    const user = await User.findOne({ name: req.query.userId } )
+    const role = await Role.findOne({ name: req.body.roleName } )
+
+    if (!user) {
+        throw new CustomError('User not Found.', 404)
+    }
+
+    if (!role) {
+        throw new CustomError('Role not Found.', 404)
+    }
+
+    for (const userRole of user.roles) {
+        if (userRole.name === role.name) {
+            throw new CustomError(`${role.name} Role is already assigned to ${user.email}!`, 409)
+        }
+    }
+
+    user.roles.push(role)
+    await user.save()
+    res.status(201).json({ message: 'User role was successfully added!' })
 })
