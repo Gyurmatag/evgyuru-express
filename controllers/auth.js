@@ -14,7 +14,7 @@ exports.signup =  asyncHandler(async (req, res) => {
         fullName: req.body.fullName,
         telephoneNumber: req.body.telephoneNumber,
         address: req.body.address,
-        password: bcrypt.hashSync(req.body.password, 8),
+        password: req.body.password ? bcrypt.hashSync(req.body.password, 8): null,
         roles: [role._id]
     })
     await user.save()

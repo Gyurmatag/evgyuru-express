@@ -5,6 +5,7 @@ const reservationSchema = new Schema(
     {
         childName: {
             type: String,
+            required: true,
         },
         course: {
             type: Schema.Types.ObjectId,

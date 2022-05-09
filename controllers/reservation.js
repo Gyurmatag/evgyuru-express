@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler")
 const db = require("../models")
 const CustomError = require("../utils/CustomError")
+const User = db.user
 const Reservation = db.reservation
 const Course = db.course
 
@@ -11,10 +12,12 @@ exports.saveReservation = asyncHandler(async (req, res) => {
         throw new CustomError('Course nof Found.', 404)
     }
 
+    const applicant = req.user || await User.findOne({ email: req.body.userEmail })
+
     const duplicatedReservation = await Reservation
         .findOne({
             course: req.body.courseId,
-            user: req.user._id
+            user: applicant._id
         })
 
     if (duplicatedReservation) {
@@ -24,11 +27,10 @@ exports.saveReservation = asyncHandler(async (req, res) => {
     const reservationToSave = new Reservation({
         childName: req.body.childName,
         course: course._id,
-        user: req.user._id,
+        user: applicant._id,
     })
     const reservation = await (await reservationToSave.save()).populate('course')
 
-    const applicant = req.user
     applicant.reservations.push(reservation)
     await applicant.save()
 
