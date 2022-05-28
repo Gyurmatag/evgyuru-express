@@ -10,6 +10,7 @@ const projectRoutes = require('./routes/projects')
 const courseRoutes = require('./routes/courses')
 const authRoutes = require('./routes/auth')
 const reservationRoutes = require('./routes/reservation')
+const externalRoutes = require('./routes/external')
 
 const index = express()
 
@@ -17,7 +18,7 @@ const corsOptions = {
     origin: config.FRONTEND_CORS_ORIGIN
 }
 
-index.use(bodyParser.json())
+index.use(bodyParser.json({ limit: '50mb' }))
 
 index.use(cors(corsOptions))
 
@@ -35,6 +36,7 @@ index.use('/project', projectRoutes)
 index.use('/course', courseRoutes)
 index.use('/auth', authRoutes)
 index.use('/reservation', reservationRoutes)
+index.use('/external', externalRoutes)
 
 index.use((error, req, res, next) => {
     console.log(error)
