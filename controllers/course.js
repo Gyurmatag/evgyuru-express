@@ -29,6 +29,7 @@ exports.getCourse = asyncHandler(async (req, res) => {
     if (!course) {
         throw new CustomError('Could not find course.', 404)
     }
+    res.status(200).json({ message: 'Course fetched successfully.', course })
 })
 
 exports.addCourse =  asyncHandler(async (req, res) => {
