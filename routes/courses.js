@@ -11,4 +11,6 @@ router.get('/:courseId', courseController.getCourse)
 
 router.post('/save', [authJwt.verifyToken, authJwt.isModerator], courseController.addCourse)
 
+router.delete('/:courseId', [authJwt.verifyToken, authJwt.isModerator], courseController.deleteCourse)
+
 module.exports = router

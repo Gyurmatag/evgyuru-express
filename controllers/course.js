@@ -50,3 +50,16 @@ exports.addCourse =  asyncHandler(async (req, res) => {
     await course.save()
     res.status(201).json({ message: 'Course was saved successfully!' })
 })
+
+exports.deleteCourse = asyncHandler(async (req, res) => {
+    const toDeleteCourseId = req.params.courseId
+    const course = await Course.findById(req.params.courseId)
+
+    if (!course) {
+        throw new CustomError('Course nof found.', 404)
+    }
+
+    await Course.findByIdAndRemove(toDeleteCourseId);
+
+    res.status(200).json({ message: 'Course was deleted successfully!' })
+})
