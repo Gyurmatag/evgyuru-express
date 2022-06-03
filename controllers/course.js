@@ -29,20 +29,17 @@ exports.getCourse = asyncHandler(async (req, res) => {
     if (!course) {
         throw new CustomError('Could not find course.', 404)
     }
-    res.status(200).json({ message: 'Course fetched successfully.', course })
+    res.status(200).json(course)
 })
 
 exports.addCourse =  asyncHandler(async (req, res) => {
-    const project = await Project.findById(req.body.project)
-    if (!project) {
-        throw new CustomError('Could not find project.', 404)
-    }
+    const project = await findProject(req.body.project)
     const course = new Course({
         title: req.body.title,
         imageUrl: req.body.imageUrl,
         description: req.body.description,
-        dateFrom: req.body.dateFrom,
-        dateTo: req.body.dateTo,
+        dateFrom: `${req.body.dateFrom}Z`,
+        dateTo: `${req.body.dateTo}Z`,
         price: req.body.price,
         occasions: req.body.occasions,
         project,
@@ -52,14 +49,33 @@ exports.addCourse =  asyncHandler(async (req, res) => {
 })
 
 exports.deleteCourse = asyncHandler(async (req, res) => {
-    const toDeleteCourseId = req.params.courseId
-    const course = await Course.findById(req.params.courseId)
-
-    if (!course) {
-        throw new CustomError('Course nof found.', 404)
-    }
-
-    await Course.findByIdAndRemove(toDeleteCourseId);
-
+    // TODO: tesztelni, hogy jó-e a hibaüzenet
+    await Course.findByIdAndRemove(req.params.courseId)
     res.status(200).json({ message: 'Course was deleted successfully!' })
 })
+
+exports.editCourse = asyncHandler(async (req, res) => {
+    const project = await findProject(req.body.project)
+    const course = new Course({
+        _id: req.body._id,
+        title: req.body.title,
+        imageUrl: req.body.imageUrl,
+        description: req.body.description,
+        dateFrom: `${req.body.dateFrom}Z`,
+        dateTo: `${req.body.dateTo}Z`,
+        price: req.body.price,
+        occasions: req.body.occasions,
+        project,
+    })
+    await Course.findByIdAndUpdate(req.params.courseId, course);
+
+    res.status(200).json({ message: 'Course was updated successfully!' })
+})
+
+const findProject = async (projectId) => {
+    const project = await Project.findById(projectId)
+    if (!project) {
+        throw new CustomError('Could not find project.', 404)
+    }
+    return project
+}
