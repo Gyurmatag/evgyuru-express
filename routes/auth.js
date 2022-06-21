@@ -11,4 +11,6 @@ router.put('/assign-role', [authJwt.isAdmin], authController.assignRoleToUser)
 
 router.get('/is-email-already-registered', authController.isEmailAlreadyRegistered)
 
+router.delete('/delete', [authJwt.verifyToken], authController.deleteMyAccount)
+
 module.exports = router

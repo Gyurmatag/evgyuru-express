@@ -91,3 +91,8 @@ exports.assignRoleToUser =  asyncHandler(async (req, res) => {
     await user.save()
     res.status(201).json({ message: 'User role was successfully added!' })
 })
+
+exports.deleteMyAccount = asyncHandler(async (req, res) => {
+    await User.findByIdAndRemove(req.user._id);
+    res.status(200).json({ message: 'Your account was deleted successfully!' })
+})
