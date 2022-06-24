@@ -7,6 +7,7 @@ const db = {
     role: require('./role'),
     project: require('./project'),
     course: require('./course'),
+    child: require('./child'),
     reservation: require('./reservation'),
 
     ROLES: ['user', 'moderator', 'admin']

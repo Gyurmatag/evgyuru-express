@@ -3,10 +3,6 @@ const Schema = mongoose.Schema
 
 const reservationSchema = new Schema(
     {
-        childName: {
-            type: String,
-            required: true,
-        },
         course: {
             type: Schema.Types.ObjectId,
             ref: 'Course',
@@ -16,7 +12,12 @@ const reservationSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'User',
             required: true
-        }
+        },
+        children: [{
+            type: Schema.Types.ObjectId,
+            ref: 'Child',
+            required: true
+        }]
     },
     { timestamps: true }
 )

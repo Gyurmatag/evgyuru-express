@@ -4,6 +4,7 @@ const CustomError = require("../utils/CustomError")
 const User = db.user
 const Reservation = db.reservation
 const Course = db.course
+const Child = db.child
 
 exports.saveReservation = asyncHandler(async (req, res) => {
     const course = await Course.findById(req.body.courseId)
@@ -24,10 +25,20 @@ exports.saveReservation = asyncHandler(async (req, res) => {
         throw new CustomError('Reservation already saved for this course.', 409)
     }
 
+    const childrenToSave = []
+    for (let child of req.body.children) {
+        let childToPush = new Child({
+            name: child.name
+        })
+        childrenToSave.push(childToPush)
+    }
+
+    const savedChildren = await Child.insertMany(childrenToSave)
+
     const reservationToSave = new Reservation({
-        childName: req.body.childName,
         course: course._id,
         user: applicant._id,
+        children: savedChildren,
     })
     const reservation = await (await reservationToSave.save()).populate('course')
 
