@@ -45,6 +45,9 @@ exports.saveReservation = asyncHandler(async (req, res) => {
     applicant.reservations.push(reservation)
     await applicant.save()
 
+    course.reservations.push(reservation)
+    await course.save()
+
     res.status(201).json(reservation)
 })
 

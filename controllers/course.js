@@ -15,6 +15,7 @@ exports.getCourseList =  asyncHandler(async (req, res) => {
         .skip((currentPage - 1) * perPage)
         .limit(perPage)
         .sort({ createdAt: 'descending' })
+        .populate('reservations')
 
     res.status(200).json({
         message: 'Fetched courses successfully.',
@@ -25,7 +26,10 @@ exports.getCourseList =  asyncHandler(async (req, res) => {
 
 exports.getCourse = asyncHandler(async (req, res) => {
     const courseId = req.params.courseId
-    const course = await Course.findById(courseId)
+    const course = await Course
+        .findById(courseId)
+        .populate('reservations')
+
     if (!course) {
         throw new CustomError('Could not find course.', 404)
     }

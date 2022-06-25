@@ -39,7 +39,12 @@ const courseSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'Project',
             required: true
-        }
+        },
+        reservations: [{
+            type: Schema.Types.ObjectId,
+            ref: 'Reservation',
+            required: true
+        }]
     },
     { timestamps: true }
 )

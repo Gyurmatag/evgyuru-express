@@ -24,7 +24,6 @@ const userSchema = new Schema(
         },
         acceptNewsletter: {
             type: Boolean,
-            required: true
         },
         roles: [
             {
