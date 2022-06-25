@@ -25,7 +25,7 @@ const courseSchema = new Schema(
         },
         maxGroupSize: {
             type: Number,
-            required: false
+            required: true
         },
         price: {
             type: Number,

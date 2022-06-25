@@ -42,6 +42,7 @@ exports.addCourse =  asyncHandler(async (req, res) => {
         dateTo: `${req.body.dateTo}Z`,
         price: req.body.price,
         occasions: req.body.occasions,
+        maxGroupSize: req.body.maxGroupSize,
         project,
     })
     await course.save()
@@ -65,6 +66,7 @@ exports.editCourse = asyncHandler(async (req, res) => {
         dateTo: `${req.body.dateTo}Z`,
         price: req.body.price,
         occasions: req.body.occasions,
+        maxGroupSize: req.body.maxGroupSize,
         project,
     })
     await Course.findByIdAndUpdate(req.params.courseId, course);

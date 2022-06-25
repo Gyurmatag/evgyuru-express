@@ -102,7 +102,7 @@ exports.findReservations =  asyncHandler(async (req, res) => {
         .skip((currentPage - 1) * perPage)
         .limit(perPage)
         .sort({ createdAt: 'descending' })
-        .populate([{ path: 'course'}, {path: 'user', select: { password: 0 }}])
+        .populate([{ path: 'course'}, { path: 'children' }, { path: 'user', select: { password: 0 } }])
 
     res.status(200).json({
         message: 'Fetched reservations successfully.',
