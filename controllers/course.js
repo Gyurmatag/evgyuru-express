@@ -59,6 +59,7 @@ exports.deleteCourse = asyncHandler(async (req, res) => {
     res.status(200).json({ message: 'Course was deleted successfully!' })
 })
 
+//TODO: itt lehet majd otpimalizálni, hogy csak azt updateljem amit kell??
 exports.editCourse = asyncHandler(async (req, res) => {
     const project = await findProject(req.body.project)
     const course = new Course({
@@ -71,6 +72,7 @@ exports.editCourse = asyncHandler(async (req, res) => {
         price: req.body.price,
         occasions: req.body.occasions,
         maxGroupSize: req.body.maxGroupSize,
+        reservations: req.body.reservations,
         project,
     })
     await Course.findByIdAndUpdate(req.params.courseId, course);
