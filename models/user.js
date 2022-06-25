@@ -22,6 +22,10 @@ const userSchema = new Schema(
         password: {
             type: String
         },
+        acceptNewsletter: {
+            type: Boolean,
+            required: true
+        },
         roles: [
             {
                 type: mongoose.Schema.Types.ObjectId,
