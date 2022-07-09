@@ -38,7 +38,7 @@ exports.signin = asyncHandler(async (req, res) => {
     }
 
     const token = jwt.sign({_id: user.id}, config.AUTH_SECRET, {
-        expiresIn: 86400 // 24 hours
+        expiresIn: config.ACCESS_TOKEN_EXPIRE_TIME_IN_MS
     })
     const authorities = []
     for (const role of user.roles) {
@@ -53,7 +53,8 @@ exports.signin = asyncHandler(async (req, res) => {
         address: user.address,
         reservations: user.reservations,
         roles: authorities,
-        accessToken: token
+        accessToken: token,
+        accessTokenExpireTimeInMs: config.ACCESS_TOKEN_EXPIRE_TIME_IN_MS,
     })
 })
 
