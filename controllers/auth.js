@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs")
 const config = require("../config")
 const db = require("../models")
 const CustomError = require("../utils/CustomError")
+const { sendConfirmationEmail } = require("../utils/nodemailer");
 const User = db.user
 const Role = db.role
 
@@ -16,9 +17,13 @@ exports.signup =  asyncHandler(async (req, res) => {
         address: req.body.address,
         password: req.body.password ? bcrypt.hashSync(req.body.password, 8): null,
         acceptNewsletter: req.body.acceptNewsletter,
+        activationKey: jwt.sign({ email: req.body.email }, config.AUTH_SECRET),
+        isActivated: false,
         roles: [role._id]
     })
     await user.save()
+    await sendConfirmationEmail(user.fullName, user.email, user.activationKey)
+
     res.status(201).json({ message: 'User was registered successfully!' })
 })
 
@@ -53,6 +58,7 @@ exports.signin = asyncHandler(async (req, res) => {
         address: user.address,
         reservations: user.reservations,
         roles: authorities,
+        isActivated: user.isActivated,
         accessToken: token,
         accessTokenExpireTimeInMs: config.ACCESS_TOKEN_EXPIRE_TIME_IN_MS,
     })
@@ -92,6 +98,17 @@ exports.assignRoleToUser =  asyncHandler(async (req, res) => {
     user.roles.push(role)
     await user.save()
     res.status(201).json({ message: 'User role was successfully added!' })
+})
+
+exports.activateUser =  asyncHandler(async (req, res) => {
+    const user = await User.findOne({ activationKey: req.params.activationKey })
+    if (!user) {
+        throw new CustomError('User not found with this activation key!', 404)
+    }
+    user.isActivated = true
+    user.activationKey = ''
+    await user.save()
+    res.status(200).json({ message: 'User was activated successfully!' })
 })
 
 exports.deleteMyAccount = asyncHandler(async (req, res) => {

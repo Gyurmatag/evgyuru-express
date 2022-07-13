@@ -25,6 +25,13 @@ const userSchema = new Schema(
         acceptNewsletter: {
             type: Boolean,
         },
+        activationKey: {
+            type: String,
+            unique: true,
+        },
+        isActivated: {
+            type: Boolean,
+        },
         roles: [
             {
                 type: mongoose.Schema.Types.ObjectId,
