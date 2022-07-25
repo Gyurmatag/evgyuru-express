@@ -31,6 +31,11 @@ const userSchema = new Schema(
         },
         isActivated: {
             type: Boolean,
+            default: false,
+        },
+        isNotRegisteredOnlyForCourseApply: {
+            type: Boolean,
+            default: false,
         },
         roles: [
             {

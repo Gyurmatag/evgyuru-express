@@ -15,7 +15,7 @@ exports.getCourseList =  asyncHandler(async (req, res) => {
         .skip((currentPage - 1) * perPage)
         .limit(perPage)
         .sort({ createdAt: 'descending' })
-        .populate('reservations')
+        .populate({ path: 'reservations', isActivated: { $eq: true } } )
 
     res.status(200).json({
         message: 'Fetched courses successfully.',

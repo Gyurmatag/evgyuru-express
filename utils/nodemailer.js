@@ -16,15 +16,11 @@ const transport = nodemailer.createTransport({
     },
 });
 
-// TODO: confirmation e-mail szépítése, beégetett paraméterek kivétele
-module.exports.sendConfirmationEmail = (name, email, confirmationCode) => {
+module.exports.sendConfirmationEmail = (name, email, subject, html) => {
     transport.sendMail({
         from: user,
         to: email,
-        subject: "Évgyűrű regisztráció megerősítés",
-        html: `<h2>Szia ${name}!</h2>
-        <p>Az Évgyűrű Alapítvány honlapján a regisztrációdat erre a linkre keresztül tudod véglegesíteni: </p>
-        <a href=http://www.evgyuru.hu/auth/confirm/${confirmationCode}> Kattins ide!</a>
-        </div>`,
+        subject,
+        html,
     });
 };

@@ -1,6 +1,9 @@
 const asyncHandler = require("express-async-handler")
+const jwt = require("jsonwebtoken");
 const db = require("../models")
 const CustomError = require("../utils/CustomError")
+const config = require("../config");
+const { sendConfirmationEmail } = require("../utils/nodemailer");
 const User = db.user
 const Reservation = db.reservation
 const Course = db.course
@@ -39,8 +42,20 @@ exports.saveReservation = asyncHandler(async (req, res) => {
         course: course._id,
         user: applicant._id,
         children: savedChildren,
+        activationKey: req.user ? '' : jwt.sign({ email: applicant.email }, config.AUTH_SECRET),
+        isActivated: !!req.user,
     })
     const reservation = await (await reservationToSave.save()).populate('course')
+
+    if (!reservation.isActivated) {
+        // TODO: e-mail szöveg kiszervezése, email designoldása
+        const emailHtml = `<h2>Szia ${applicant.fullName}!</h2>
+        <p>Az Évgyűrű Alapítvány honlapján a kurzus foglalásodat erre a linkre kattintva tudod véglegesíteni: </p>
+        <a href=http://www.evgyuru.hu/courses/confirm/${reservation.activationKey}> Kattins ide!</a>
+        <p>(Ha nincs még regisztrációd és regisztráltál a kurzus jelentkezésnél, akkor a fiókod és aktiválódik!)</p>
+        </div>`
+        await sendConfirmationEmail(applicant.fullName, applicant.email, 'Évgyűrű kurzus foglalás megerősítés', emailHtml)
+    }
 
     applicant.reservations.push(reservation)
     await applicant.save()
@@ -49,6 +64,24 @@ exports.saveReservation = asyncHandler(async (req, res) => {
     await course.save()
 
     res.status(201).json(reservation)
+})
+
+exports.activateReservation =  asyncHandler(async (req, res) => {
+    const reservation = await Reservation.findOne({ activationKey: req.params.activationKey }).populate('user')
+    const user = reservation.user
+    if (!user.isActivated && !user.isNotRegisteredOnlyForCourseApply) {
+        const user = reservation.user
+        user.isActivated = true
+        user.activationKey = ''
+        await user.save()
+    }
+    if (!reservation) {
+        throw new CustomError('Reservation not found with this activation key!', 404)
+    }
+    reservation.isActivated = true
+    reservation.activationKey = ''
+    await reservation.save()
+    res.status(200).json({ message: 'Reservation was activated successfully!' })
 })
 
 exports.deleteReservation = asyncHandler(async (req, res) => {

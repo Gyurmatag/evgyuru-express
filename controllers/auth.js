@@ -10,7 +10,8 @@ const Role = db.role
 
 exports.signup =  asyncHandler(async (req, res) => {
     const role = await Role.findOne({ name: 'user' } )
-    const user = new User({
+    const onlyForCourseApplyUser = req.user
+    const userDoc = {
         email: req.body.email,
         fullName: req.body.fullName,
         telephoneNumber: req.body.telephoneNumber,
@@ -18,11 +19,21 @@ exports.signup =  asyncHandler(async (req, res) => {
         password: req.body.password ? bcrypt.hashSync(req.body.password, 8): null,
         acceptNewsletter: req.body.acceptNewsletter,
         activationKey: jwt.sign({ email: req.body.email }, config.AUTH_SECRET),
-        isActivated: false,
+        isNotRegisteredOnlyForCourseApply: req.body.isNotRegisteredOnlyForCourseApply,
         roles: [role._id]
-    })
-    await user.save()
-    await sendConfirmationEmail(user.fullName, user.email, user.activationKey)
+    }
+    const user = new User(userDoc)
+    if (onlyForCourseApplyUser) {
+        await User.updateOne({ email: req.user.email }, userDoc)
+    } else {
+        await user.save()
+        // TODO: kiszervezni, szépíteni, email designolása
+        const emailHtml = `<h2>Szia ${user.fullName}!</h2>
+        <p>Az Évgyűrű Alapítvány honlapján a regisztrációdat erre a linkre keresztül tudod véglegesíteni: </p>
+        <a href=http://www.evgyuru.hu/auth/confirm/${user.activationKey}> Kattins ide!</a>
+        </div>`
+        await sendConfirmationEmail(user.fullName, user.email, 'Évgyűrű regisztráció megerősítés', emailHtml)
+    }
 
     res.status(201).json({ message: 'User was registered successfully!' })
 })
@@ -65,7 +76,7 @@ exports.signin = asyncHandler(async (req, res) => {
 })
 
 exports.isEmailAlreadyRegistered = asyncHandler(async (req, res) => {
-    const user = await User.findOne({ email: req.query.email })
+    const user = await User.findOne({ email: req.query.email, isNotRegisteredOnlyForCourseApply: false })
     let isEmailAlreadyRegistered = false
 
     if (user) {

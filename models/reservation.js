@@ -17,7 +17,15 @@ const reservationSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'Child',
             required: true
-        }]
+        }],
+        activationKey: {
+            type: String,
+            unique: true,
+        },
+        isActivated: {
+            type: Boolean,
+            required: true,
+        }
     },
     { timestamps: true }
 )
