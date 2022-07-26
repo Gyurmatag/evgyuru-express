@@ -16,9 +16,10 @@ const transport = nodemailer.createTransport({
     },
 });
 
+// TODO: from rész kiszervezése, kérdés még hova?
 module.exports.sendConfirmationEmail = (name, email, subject, html) => {
     transport.sendMail({
-        from: user,
+        from: "Évgyűrű Alapítvány <info@evgyuru.hu>",
         to: email,
         subject,
         html,

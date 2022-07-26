@@ -27,12 +27,14 @@ exports.signup =  asyncHandler(async (req, res) => {
         await User.updateOne({ email: req.user.email }, userDoc)
     } else {
         await user.save()
-        // TODO: kiszervezni, szépíteni, email designolása
-        const emailHtml = `<h2>Szia ${user.fullName}!</h2>
-        <p>Az Évgyűrű Alapítvány honlapján a regisztrációdat erre a linkre keresztül tudod véglegesíteni: </p>
-        <a href=http://www.evgyuru.hu/auth/confirm/${user.activationKey}> Kattins ide!</a>
-        </div>`
-        await sendConfirmationEmail(user.fullName, user.email, 'Évgyűrű regisztráció megerősítés', emailHtml)
+        if (!user.isNotRegisteredOnlyForCourseApply) {
+            // TODO: kiszervezni, szépíteni, email designolása
+            const emailHtml = `<h2>Szia ${user.fullName}!</h2>
+            <p>Az Évgyűrű Alapítvány honlapján a regisztrációdat erre a linkre keresztül tudod véglegesíteni: </p>
+            <a href=http://www.evgyuru.hu/auth/confirm/${user.activationKey}> Kattins ide!</a>
+            </div>`
+            await sendConfirmationEmail(user.fullName, user.email, 'Évgyűrű regisztráció megerősítés', emailHtml)
+        }
     }
 
     res.status(201).json({ message: 'User was registered successfully!' })
@@ -117,7 +119,6 @@ exports.activateUser =  asyncHandler(async (req, res) => {
         throw new CustomError('User not found with this activation key!', 404)
     }
     user.isActivated = true
-    user.activationKey = ''
     await user.save()
     res.status(200).json({ message: 'User was activated successfully!' })
 })

@@ -72,14 +72,12 @@ exports.activateReservation =  asyncHandler(async (req, res) => {
     if (!user.isActivated && !user.isNotRegisteredOnlyForCourseApply) {
         const user = reservation.user
         user.isActivated = true
-        user.activationKey = ''
         await user.save()
     }
     if (!reservation) {
         throw new CustomError('Reservation not found with this activation key!', 404)
     }
     reservation.isActivated = true
-    reservation.activationKey = ''
     await reservation.save()
     res.status(200).json({ message: 'Reservation was activated successfully!' })
 })
