@@ -52,7 +52,7 @@ exports.signin = asyncHandler(async (req, res) => {
         user.password
     )
     if (!passwordIsValid) {
-        throw new CustomError('Invalid password.', 401)
+        throw new CustomError('error.api.invalidPassword', 401)
     }
 
     const token = jwt.sign({_id: user.id}, config.AUTH_SECRET, {
