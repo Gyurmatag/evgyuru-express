@@ -22,6 +22,9 @@ const userSchema = new Schema(
         password: {
             type: String
         },
+        passwordResetKey: {
+            type: String,
+        },
         acceptNewsletter: {
             type: Boolean,
         },

@@ -30,8 +30,8 @@ exports.signup =  asyncHandler(async (req, res) => {
         if (!user.isNotRegisteredOnlyForCourseApply) {
             // TODO: kiszervezni, szépíteni, email designolása
             const emailHtml = `<h2>Szia ${user.fullName}!</h2>
-            <p>Az Évgyűrű Alapítvány honlapján a regisztrációdat erre a linkre keresztül tudod véglegesíteni: </p>
-            <a href=http://www.evgyuru.hu/auth/confirm/${user.activationKey}> Kattins ide!</a>
+            <p>Az Évgyűrű Alapítvány honlapján a regisztrációdat ezen a linken keresztül tudod véglegesíteni: </p>
+            <a href=https://www.evgyuru.hu/auth/confirm/${user.activationKey}> Kattins ide!</a>
             </div>`
             await sendConfirmationEmail(user.fullName, user.email, 'Évgyűrű regisztráció megerősítés', emailHtml)
         }
@@ -111,6 +111,41 @@ exports.assignRoleToUser =  asyncHandler(async (req, res) => {
     user.roles.push(role)
     await user.save()
     res.status(201).json({ message: 'User role was successfully added!' })
+})
+
+exports.claimPasswordResetKey =  asyncHandler(async (req, res) => {
+    const user = await User.findOne({ email: req.body.email, isNotRegisteredOnlyForCourseApply: false })
+    if (!user) {
+        throw new CustomError('error.api.invalidOrUsedPasswordResetKey', 404)
+    }
+    user.passwordResetKey = jwt.sign({ email: user.email }, config.AUTH_SECRET)
+    await user.save()
+    // TODO: kiszervezni, szépíteni, email designolása
+    const emailHtml = `<h2>Szia ${user.fullName}!</h2>
+    <p>Az Évgyűrű Alapítvány honlapján a regisztrációdhoz tartozó jelszó visszaállítát ezen a linken keresztül tudod véglegesíteni: </p>
+    <a href=https://www.evgyuru.hu/auth/password-reset/${user.passwordResetKey}> Kattins ide!</a>
+    </div>`
+    await sendConfirmationEmail(user.fullName, user.email, 'Évgyűrű jelszó visszaállítása', emailHtml)
+    res.status(200).json({ message: 'success.api.passwordResetKeySent' })
+})
+
+exports.isPasswordResetKeyValid =  asyncHandler(async (req, res) => {
+    const user = await User.findOne({ passwordResetKey: req.params.passwordResetKey, isNotRegisteredOnlyForCourseApply: false })
+    if (!user) {
+        throw new CustomError('error.api.userNotFoundWithThisPasswordResetKey', 404)
+    }
+    res.status(200).json({ message: 'success.api.passwordResetKeyIsValid' })
+})
+
+exports.passwordReset =  asyncHandler(async (req, res) => {
+    const user = await User.findOne({ passwordResetKey: req.params.passwordResetKey, isNotRegisteredOnlyForCourseApply: false })
+    if (!user) {
+        throw new CustomError('error.api.userNotFoundWithThisPasswordResetKey', 404)
+    }
+    user.password = bcrypt.hashSync(req.body.password, 8)
+    user.passwordResetKey = ''
+    await user.save()
+    res.status(200).json({ message: 'success.api.passwordChangedSuccessfully' })
 })
 
 exports.activateUser =  asyncHandler(async (req, res) => {

@@ -51,7 +51,7 @@ exports.saveReservation = asyncHandler(async (req, res) => {
         // TODO: e-mail szöveg kiszervezése, email designoldása
         const emailHtml = `<h2>Szia ${applicant.fullName}!</h2>
         <p>Az Évgyűrű Alapítvány honlapján a kurzus foglalásodat erre a linkre kattintva tudod véglegesíteni: </p>
-        <a href=http://www.evgyuru.hu/courses/confirm/${reservation.activationKey}> Kattins ide!</a>
+        <a href=https://www.evgyuru.hu/courses/confirm/${reservation.activationKey}> Kattins ide!</a>
         <p>(Ha nincs még regisztrációd és regisztráltál a kurzus jelentkezésnél, akkor a fiókod és aktiválódik!)</p>
         </div>`
         await sendConfirmationEmail(applicant.fullName, applicant.email, 'Évgyűrű kurzus foglalás megerősítés', emailHtml)
@@ -136,7 +136,7 @@ exports.findReservations =  asyncHandler(async (req, res) => {
         .skip((currentPage - 1) * perPage)
         .limit(perPage)
         .sort({ createdAt: 'descending' })
-        .populate([{ path: 'course'}, { path: 'children' }, { path: 'user', select: { password: 0 } }])
+        .populate([{ path: 'course'}, { path: 'children' }, { path: 'user', select: { password: 0, activationKey: 0, isActivated: 0, passwordResetKey: 0  } }])
 
     res.status(200).json({
         message: 'Fetched reservations successfully.',
