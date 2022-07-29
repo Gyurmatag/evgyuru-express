@@ -15,7 +15,15 @@ const userSchema = new Schema(
             type: String,
             required: true
         },
-        address: {
+        zipCode: {
+            type: String,
+            required: true
+        },
+        city: {
+            type: String,
+            required: true
+        },
+        streetAddress: {
             type: String,
             required: true
         },

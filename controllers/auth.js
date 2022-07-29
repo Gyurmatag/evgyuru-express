@@ -15,7 +15,9 @@ exports.signup =  asyncHandler(async (req, res) => {
         email: req.body.email,
         fullName: req.body.fullName,
         telephoneNumber: req.body.telephoneNumber,
-        address: req.body.address,
+        zipCode: req.body.zipCode,
+        city: req.body.city,
+        streetAddress: req.body.streetAddress,
         password: req.body.password ? bcrypt.hashSync(req.body.password, 8): null,
         acceptNewsletter: req.body.acceptNewsletter,
         activationKey: jwt.sign({ email: req.body.email }, config.AUTH_SECRET),
@@ -68,7 +70,9 @@ exports.signin = asyncHandler(async (req, res) => {
         email: user.email,
         fullName: user.fullName,
         telephoneNumber: user.telephoneNumber,
-        address: user.address,
+        zipCode: user.zipCode,
+        city: user.city,
+        streetAddress: user.streetAddress,
         reservations: user.reservations,
         roles: authorities,
         isActivated: user.isActivated,
@@ -91,12 +95,8 @@ exports.isEmailAlreadyRegistered = asyncHandler(async (req, res) => {
 })
 
 exports.assignRoleToUser =  asyncHandler(async (req, res) => {
-    const user = await User.findOne({ name: req.query.userId } )
+    const user = await findUserById(req.query.userId )
     const role = await Role.findOne({ name: req.body.roleName } )
-
-    if (!user) {
-        throw new CustomError('User not Found.', 404)
-    }
 
     if (!role) {
         throw new CustomError('Role not Found.', 404)
@@ -158,7 +158,21 @@ exports.activateUser =  asyncHandler(async (req, res) => {
     res.status(200).json({ message: 'User was activated successfully!' })
 })
 
+//TODO: itt lehet majd otpimalizálni, hogy csak azt updateljem amit kell??
+exports.editMyAccount = asyncHandler(async (req, res) => {
+    await User.findByIdAndUpdate(req.user._id, req.body);
+    res.status(200).json({ message: 'success.api.accountUpdatedSuccessFully' })
+})
+
 exports.deleteMyAccount = asyncHandler(async (req, res) => {
     await User.findByIdAndRemove(req.user._id);
     res.status(200).json({ message: 'Your account was deleted successfully!' })
 })
+
+const findUserById = async (userId) => {
+    const user = await User.findById(projectId)
+    if (!user) {
+        throw new CustomError('Could not find user.', 404)
+    }
+    return user
+}

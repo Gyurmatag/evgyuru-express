@@ -37,7 +37,7 @@ exports.getCourse = asyncHandler(async (req, res) => {
 })
 
 exports.addCourse =  asyncHandler(async (req, res) => {
-    const project = await findProject(req.body.project)
+    const project = await findProjectById(req.body.project)
     const course = new Course({
         title: req.body.title,
         imageUrl: req.body.imageUrl,
@@ -61,7 +61,7 @@ exports.deleteCourse = asyncHandler(async (req, res) => {
 
 //TODO: itt lehet majd otpimalizálni, hogy csak azt updateljem amit kell??
 exports.editCourse = asyncHandler(async (req, res) => {
-    const project = await findProject(req.body.project)
+    const project = await findProjectById(req.body.project)
     const course = new Course({
         _id: req.body._id,
         title: req.body.title,
@@ -80,7 +80,7 @@ exports.editCourse = asyncHandler(async (req, res) => {
     res.status(200).json({ message: 'Course was updated successfully!' })
 })
 
-const findProject = async (projectId) => {
+const findProjectById = async (projectId) => {
     const project = await Project.findById(projectId)
     if (!project) {
         throw new CustomError('Could not find project.', 404)

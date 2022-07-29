@@ -19,6 +19,8 @@ router.put('/password-reset', authController.claimPasswordResetKey)
 
 router.put('/activation/:activationKey', authController.activateUser)
 
+router.put('/edit', [authJwt.verifyToken], authController.editMyAccount)
+
 router.delete('/delete', [authJwt.verifyToken], authController.deleteMyAccount)
 
 module.exports = router
