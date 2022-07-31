@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler")
 const jwt = require("jsonwebtoken");
+const ical = require('ical-generator');
 const db = require("../models")
 const CustomError = require("../utils/CustomError")
 const config = require("../config");
@@ -55,6 +56,45 @@ exports.saveReservation = asyncHandler(async (req, res) => {
         <p>(Ha nincs még regisztrációd és regisztráltál a kurzus jelentkezésnél, akkor a fiókod és aktiválódik!)</p>
         </div>`
         await sendConfirmationEmail(applicant.fullName, applicant.email, 'Évgyűrű kurzus foglalás megerősítés', emailHtml)
+    } else {
+        // TODO: kiszervezni ezt a calendaros cuccot, szépíteni
+        const calendar = ical({ name: reservation.course.title });
+        calendar.createEvent({
+            organizer: {
+                name: 'Évgyűrű Alapítvány',
+                email: 'info@evgyuru.hu'
+            },
+            timezone: 'Europe/Budapest',
+            start: reservation.course.dateFrom,
+            end: reservation.course.dateTo,
+            summary: reservation.course.title,
+            description: reservation.course.title,
+            location: 'Eger, Bartók Béla tér 4., 3300',
+            url: 'https://www.evgyuru.hu/'
+        });
+        // TODO: e-mail szöveg kiszervezése, email designoldása
+        const emailHtml = `<h2>Szia ${applicant.fullName}!</h2>
+        <p>Az Évgyűrű Alapítvány honlapján sikeresen jelentkeztél a következő kurzusra:  ${reservation.course.title}</p>
+        </div>`
+        const headers = {
+            'x-invite': {
+                prepared: true,
+                value: reservation._id
+            }
+        }
+        const icalEvent = {
+            filename: 'invite.ics',
+            method: 'PUBLISH',
+            content: calendar.toString()
+        }
+        await sendConfirmationEmail(
+            applicant.fullName,
+            applicant.email,
+            'Évgyűrű Alaptívány sikeres kurzus foglalás',
+            emailHtml,
+            headers,
+            icalEvent
+        )
     }
 
     applicant.reservations.push(reservation)

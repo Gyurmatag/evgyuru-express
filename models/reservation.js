@@ -20,7 +20,6 @@ const reservationSchema = new Schema(
         }],
         activationKey: {
             type: String,
-            unique: true,
         },
         isActivated: {
             type: Boolean,

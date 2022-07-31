@@ -17,11 +17,13 @@ const transport = nodemailer.createTransport({
 });
 
 // TODO: from rész kiszervezése, kérdés még hova?
-module.exports.sendConfirmationEmail = (name, email, subject, html) => {
+module.exports.sendConfirmationEmail = (name, email, subject, html, headers = null, icalEvent = null) => {
     transport.sendMail({
         from: "Évgyűrű Alapítvány <info@evgyuru.hu>",
         to: email,
         subject,
         html,
+        headers,
+        icalEvent,
     });
 };

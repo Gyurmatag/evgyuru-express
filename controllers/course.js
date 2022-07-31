@@ -1,4 +1,5 @@
 const asyncHandler = require("express-async-handler")
+const moment = require('moment-timezone');
 const db = require("../models")
 const CustomError = require("../utils/CustomError")
 const Course = db.course
@@ -38,12 +39,13 @@ exports.getCourse = asyncHandler(async (req, res) => {
 
 exports.addCourse =  asyncHandler(async (req, res) => {
     const project = await findProjectById(req.body.project)
+    // TODO: ezt a "Europe/Budapest"-et kiszervezni
     const course = new Course({
         title: req.body.title,
         imageUrl: req.body.imageUrl,
         description: req.body.description,
-        dateFrom: `${req.body.dateFrom}Z`,
-        dateTo: `${req.body.dateTo}Z`,
+        dateFrom: moment.tz(req.body.dateFrom, "Europe/Budapest"),
+        dateTo: moment.tz(req.body.dateTo, "Europe/Budapest"),
         price: req.body.price,
         occasions: req.body.occasions,
         maxGroupSize: req.body.maxGroupSize,
