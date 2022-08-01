@@ -64,7 +64,6 @@ exports.saveReservation = asyncHandler(async (req, res) => {
                 name: 'Évgyűrű Alapítvány',
                 email: 'info@evgyuru.hu'
             },
-            timezone: 'Europe/Budapest',
             start: reservation.course.dateFrom,
             end: reservation.course.dateTo,
             summary: reservation.course.title,

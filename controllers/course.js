@@ -39,13 +39,12 @@ exports.getCourse = asyncHandler(async (req, res) => {
 
 exports.addCourse =  asyncHandler(async (req, res) => {
     const project = await findProjectById(req.body.project)
-    // TODO: ezt a "Europe/Budapest"-et kiszervezni
     const course = new Course({
         title: req.body.title,
         imageUrl: req.body.imageUrl,
         description: req.body.description,
-        dateFrom: moment.tz(req.body.dateFrom, "Europe/Budapest"),
-        dateTo: moment.tz(req.body.dateTo, "Europe/Budapest"),
+        dateFrom: req.body.dateFrom,
+        dateTo: req.body.dateTo,
         price: req.body.price,
         occasions: req.body.occasions,
         maxGroupSize: req.body.maxGroupSize,
@@ -69,8 +68,8 @@ exports.editCourse = asyncHandler(async (req, res) => {
         title: req.body.title,
         imageUrl: req.body.imageUrl,
         description: req.body.description,
-        dateFrom: `${req.body.dateFrom}Z`,
-        dateTo: `${req.body.dateTo}Z`,
+        dateFrom: req.body.dateFrom,
+        dateTo: req.body.dateTo,
         price: req.body.price,
         occasions: req.body.occasions,
         maxGroupSize: req.body.maxGroupSize,
