@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs")
 const config = require("../config")
 const db = require("../models")
 const CustomError = require("../utils/CustomError")
-const { sendConfirmationEmail } = require("../utils/nodemailer");
+const { sendEmail } = require("../utils/nodemailer");
 const User = db.user
 const Role = db.role
 
@@ -30,12 +30,16 @@ exports.signup =  asyncHandler(async (req, res) => {
     } else {
         await user.save()
         if (!user.isNotRegisteredOnlyForCourseApply) {
-            // TODO: kiszervezni, szépíteni, email designolása
-            const emailHtml = `<h2>Szia ${user.fullName}!</h2>
-            <p>Az Évgyűrű Alapítvány honlapján a regisztrációdat ezen a linken keresztül tudod véglegesíteni: </p>
-            <a href=https://www.evgyuru.hu/auth/confirm/${user.activationKey}> Kattins ide!</a>
-            </div>`
-            await sendConfirmationEmail(user.fullName, user.email, 'Évgyűrű regisztráció megerősítés', emailHtml)
+            // TODO: kiszervezni, szépíteni
+            await sendEmail(
+                user.email,
+                'Évgyűrű Alapítvány regisztráció megerősítése',
+                'signup-confirm',
+                {
+                    fullName: user.fullName,
+                    signupConfirmationLink: `https://www.evgyuru.hu/auth/confirm/${user.activationKey}`,
+                },
+            )
         }
     }
 
@@ -120,12 +124,17 @@ exports.claimPasswordResetKey =  asyncHandler(async (req, res) => {
     }
     user.passwordResetKey = jwt.sign({ email: user.email }, config.AUTH_SECRET)
     await user.save()
-    // TODO: kiszervezni, szépíteni, email designolása
-    const emailHtml = `<h2>Szia ${user.fullName}!</h2>
-    <p>Az Évgyűrű Alapítvány honlapján a regisztrációdhoz tartozó jelszó visszaállítát ezen a linken keresztül tudod véglegesíteni: </p>
-    <a href=https://www.evgyuru.hu/auth/password-reset/${user.passwordResetKey}> Kattins ide!</a>
-    </div>`
-    await sendConfirmationEmail(user.fullName, user.email, 'Évgyűrű jelszó visszaállítása', emailHtml)
+    // TODO: kiszervezni, szépíteni
+    await sendEmail(
+        user.email,
+        'Évgyűrű Alapítvány jelszó helyreállítása',
+        'password-change-confirm',
+        {
+            fullName: user.fullName,
+            signupConfirmationLink: `https://www.evgyuru.hu/auth/password-reset/${user.passwordResetKey}`,
+        },
+    )
+
     res.status(200).json({ message: 'success.api.passwordResetKeySent' })
 })
 

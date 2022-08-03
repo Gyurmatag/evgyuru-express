@@ -1,0 +1,23 @@
+html
+    head
+        meta(charset="utf-8")
+        style
+            include ../style/main.css
+    body
+        div(class="wrapper")
+            h1(class="greeting") Szia #{fullName}!
+            h2(class="sub-greeting") Az Évgyűrű Alapítvány honlapján a következő kurzusra jelentkeztél:
+            p(class="course-title") #{courseTitle}
+            div(class="course-date")
+                p(class="date-range") #{dateFrom} - #{dateTo}
+            div(class="children")
+                div(class="children-title") Jelentkeztetett gyermek(ek):
+                ul(class="children-list")
+                    each child in children
+                        li(class="list-element")=child.name
+            div(class="confirm-hint") A megerősítéshez kérlek kattints a lenti gombra:
+            div(class="confirm-wrapper")
+                a(class="confirm-apply" href=confirmLink) Foglalás megerősítése
+    footer
+        div(class="footer-wrapper")
+            p © 2022 Évgyűrű Alapítvány

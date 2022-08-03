@@ -4,7 +4,8 @@ const ical = require('ical-generator');
 const db = require("../models")
 const CustomError = require("../utils/CustomError")
 const config = require("../config");
-const { sendConfirmationEmail } = require("../utils/nodemailer");
+const { sendEmail } = require("../utils/nodemailer");
+const moment = require("moment-timezone");
 const User = db.user
 const Reservation = db.reservation
 const Course = db.course
@@ -46,16 +47,24 @@ exports.saveReservation = asyncHandler(async (req, res) => {
         activationKey: req.user ? '' : jwt.sign({ email: applicant.email }, config.AUTH_SECRET),
         isActivated: !!req.user,
     })
-    const reservation = await (await reservationToSave.save()).populate('course')
+    const reservation = await (await reservationToSave.save()).populate(['course', 'children'])
 
     if (!reservation.isActivated) {
-        // TODO: e-mail szöveg kiszervezése, email designoldása
-        const emailHtml = `<h2>Szia ${applicant.fullName}!</h2>
-        <p>Az Évgyűrű Alapítvány honlapján a kurzus foglalásodat erre a linkre kattintva tudod véglegesíteni: </p>
-        <a href=https://www.evgyuru.hu/courses/confirm/${reservation.activationKey}> Kattins ide!</a>
-        <p>(Ha nincs még regisztrációd és regisztráltál a kurzus jelentkezésnél, akkor a fiókod és aktiválódik!)</p>
-        </div>`
-        await sendConfirmationEmail(applicant.fullName, applicant.email, 'Évgyűrű kurzus foglalás megerősítés', emailHtml)
+        // TODO: e-mail szöveg kiszervezése
+        // TODO: nyelvesítések, esetleges kiszevezések!
+        await sendEmail(
+            applicant.email,
+            'Évgyűrű Alaptívány sikeres kurzus jelentkezés megerősítése',
+            'reservation-confirm',
+            {
+                fullName: applicant.fullName,
+                courseTitle: reservation.course.title,
+                dateFrom: moment(reservation.course.dateFrom).format('YYYY.MM.DD'),
+                dateTo: moment(reservation.course.dateTo).format('YYYY.MM.DD'),
+                children: reservation.children,
+                confirmLink: `https://www.evgyuru.hu/courses/confirm/${reservation.activationKey}`
+            },
+        )
     } else {
         // TODO: kiszervezni ezt a calendaros cuccot, szépíteni
         const calendar = ical({ name: reservation.course.title });
@@ -71,10 +80,6 @@ exports.saveReservation = asyncHandler(async (req, res) => {
             location: 'Eger, Bartók Béla tér 4., 3300',
             url: 'https://www.evgyuru.hu/'
         });
-        // TODO: e-mail szöveg kiszervezése, email designoldása
-        const emailHtml = `<h2>Szia ${applicant.fullName}!</h2>
-        <p>Az Évgyűrű Alapítvány honlapján sikeresen jelentkeztél a következő kurzusra:  ${reservation.course.title}</p>
-        </div>`
         const headers = {
             'x-invite': {
                 prepared: true,
@@ -86,11 +91,18 @@ exports.saveReservation = asyncHandler(async (req, res) => {
             method: 'PUBLISH',
             content: calendar.toString()
         }
-        await sendConfirmationEmail(
-            applicant.fullName,
+        // TODO: nyelvesítések, esetleges kiszevezések, dátum, stb...
+        await sendEmail(
             applicant.email,
             'Évgyűrű Alaptívány sikeres kurzus foglalás',
-            emailHtml,
+            'reservation-success',
+            {
+                fullName: applicant.fullName,
+                courseTitle: reservation.course.title,
+                dateFrom: moment(reservation.course.dateFrom).format('YYYY.MM.DD'),
+                dateTo: moment(reservation.course.dateTo).format('YYYY.MM.DD'),
+                children: reservation.children,
+            },
             headers,
             icalEvent
         )

@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const Email = require('email-templates');
 const config = require("../config")
 
 const host = config.EMAIL_HOST;
@@ -16,14 +17,25 @@ const transport = nodemailer.createTransport({
     },
 });
 
-// TODO: from rész kiszervezése, kérdés még hova?
-module.exports.sendConfirmationEmail = (name, email, subject, html, headers = null, icalEvent = null) => {
-    transport.sendMail({
+const email = new Email({
+    message: {
         from: "Évgyűrű Alapítvány <info@evgyuru.hu>",
-        to: email,
-        subject,
-        html,
-        headers,
-        icalEvent,
+    },
+    send: true,
+    transport,
+});
+
+// TODO: paraméterek refaktorálása (túl sok paraméter - objetumba szervezés)
+// TODO: nyelvesítések bevezetése
+module.exports.sendEmail = (to, subject, template, variables, headers = null, icalEvent = null) => {
+    email.send({
+        template,
+        message: {
+            to,
+            subject,
+            icalEvent,
+            headers,
+        },
+        locals: variables,
     });
 };

@@ -1,0 +1,85 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap");
+
+body {
+    font-family: 'Montserrat', sans-serif;
+}
+.wrapper {
+    max-width: 480px;
+    margin: auto;
+    padding: 10px;
+}
+.greeting {
+    text-align: center;
+    font-size: 14px;
+    border-bottom: 2px solid #2563eb;
+    font-weight: bold;
+    color: #1f2937;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+.sub-greeting {
+    text-align: center;
+    color: #4b5563;
+    font-size: 12px;
+    margin-bottom: 15px;
+}
+.action-wrapper {
+    text-align: center;
+}
+.action-button {
+    text-decoration: none;
+    background: #16a34a;
+    padding: 10px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 10px;
+    color: #f3f4f6;
+    margin-bottom: 5px;
+}
+.footer-wrapper {
+    padding: 10px;
+    text-align: center;
+    font-size: 8px;
+    color: #374151;
+    border-top: 1px solid #d1d5db;
+    margin-top: 20px;
+}
+.course-title {
+    background: #2563eb;
+    padding: 10px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 10px;
+    color: #f3f4f6;
+    margin-bottom: 5px;
+}
+.course-date {
+    text-align: center;
+    color: #1f2937;
+    margin-bottom: 10px;
+}
+.material-icon {
+    font-size: 16px!important;
+}
+.date-range {
+    margin-top: 0;
+    font-size: 12px;
+}
+.children {
+    text-align: center;
+    font-size: 10px;
+    color: #1f2937;
+}
+.children-title {
+    font-weight: bold;
+}
+.children-list {
+    list-style-type: none;
+    padding: 0;
+}
+.list-element {
+    margin: 0;
+}

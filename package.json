@@ -10,9 +10,11 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.1",
+    "cache-pug-templates": "^2.0.3",
     "cloudinary": "^1.30.0",
     "cors": "^2.8.5",
     "dotenv": "^14.2.0",
+    "email-templates": "^10.0.1",
     "express": "^4.17.3",
     "express-async-handler": "^1.2.0",
     "express-validator": "^6.14.0",
@@ -20,7 +22,8 @@
     "jsonwebtoken": "^8.5.1",
     "moment-timezone": "^0.5.34",
     "mongoose": "^6.2.4",
-    "nodemailer": "^6.7.7"
+    "nodemailer": "^6.7.7",
+    "pug": "^3.0.2"
   },
   "devDependencies": {
     "nodemon": "^2.0.15"

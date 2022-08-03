@@ -2,6 +2,8 @@ const express = require('express')
 const dotEnv = require('dotenv')
 const bodyParser = require('body-parser')
 const cors = require("cors")
+const path = require("path");
+const CachePugTemplates = require('cache-pug-templates');
 
 dotEnv.config()
 const config = require('./config')
@@ -19,6 +21,8 @@ const corsOptions = {
 }
 
 index.use(bodyParser.json({ limit: '50mb' }))
+
+index.set('view engine', 'pug');
 
 index.use(cors(corsOptions))
 
@@ -50,6 +54,8 @@ const db = require("./models")
 const asyncHandler = require("express-async-handler")
 const Role = db.role
 
+const views = path.join(__dirname, 'emails');
+
 db.mongoose
     .connect(
         config.MONGODB_URI
@@ -57,7 +63,11 @@ db.mongoose
     .then(_ => {
         console.log("App started")
         initial()
-        index.listen(config.PORT)
+        index.listen(config.PORT, () => {
+            // TODO: dupla callback? await-tal kiváltani jövőben refakt?
+            const cache = new CachePugTemplates({ index, views });
+            cache.start();
+        });
     })
     .catch(err => console.log(err))
 
