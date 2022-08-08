@@ -161,14 +161,30 @@ exports.deleteReservation = asyncHandler(async (req, res) => {
 exports.getLoggedInUserReservationList =  asyncHandler(async (req, res) => {
     const currentPage = +req.query.page || 1
     const perPage = +req.query.limit || 5
+    const filterDateFromAfterToday = req.query.filterDateFromAfterToday
+    let dateFromFilters
+
+    // TODO: lehetséges refakt?
+    if (filterDateFromAfterToday) {
+        dateFromFilters = {
+            $gt: moment().toDate()
+        }
+    } else if (filterDateFromAfterToday === false) {
+        dateFromFilters = {
+            $lt: moment().toDate()
+        }
+    }
 
     const reservationCount = await Reservation.find({ user: req.user._id }).countDocuments()
     const reservations = await Reservation
-        .find({ user: req.user._id })
+        .find({
+            user: req.user._id,
+            dateFrom: dateFromFilters
+        })
         .skip((currentPage - 1) * perPage)
         .limit(perPage)
         .sort({ createdAt: 'descending' })
-        .populate('course')
+        .populate(['course', 'children'])
 
     res.status(200).json({
         message: 'Fetched user reservations successfully.',

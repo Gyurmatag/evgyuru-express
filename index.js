@@ -58,7 +58,8 @@ const views = path.join(__dirname, 'emails');
 
 db.mongoose
     .connect(
-        config.MONGODB_URI
+        config.MONGODB_URI,
+        { ignoreUndefined: true }
     )
     .then(_ => {
         console.log("App started")

@@ -9,10 +9,26 @@ exports.getCourseList =  asyncHandler(async (req, res) => {
     const currentPage = +req.query.page || 1
     const perPage = +req.query.limit || 5
     const projectId = req.query.projectId
+    const filterDateFromAfterToday = req.query.filterDateFromAfterToday
+    let dateFromFilters
+
+    // TODO: lehetséges refakt?
+    if (filterDateFromAfterToday) {
+        dateFromFilters = {
+            $gt: moment().toDate()
+        }
+    } else if (filterDateFromAfterToday === false) {
+        dateFromFilters = {
+            $lt: moment().toDate()
+        }
+    }
 
     const courseCount = await Course.find( { project: projectId }).countDocuments()
     const courses = await Course
-        .find( { project: projectId })
+        .find( {
+            project: projectId,
+            dateFrom: dateFromFilters
+        })
         .skip((currentPage - 1) * perPage)
         .limit(perPage)
         .sort({ createdAt: 'descending' })

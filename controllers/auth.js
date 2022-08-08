@@ -47,7 +47,13 @@ exports.signup =  asyncHandler(async (req, res) => {
 })
 
 exports.signin = asyncHandler(async (req, res) => {
-    const user = await User.findOne({ email: req.body.email }).populate(['roles', 'reservations'])
+    const user = await User.findOne({ email: req.body.email }).populate([
+        'roles',
+        {
+            path: 'reservations',
+            populate: ['course']
+        }]
+    )
 
     if (!user) {
         throw new CustomError('User not Found.', 404)
