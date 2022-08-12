@@ -1,18 +1,38 @@
 const express = require('express')
 
 const courseController = require('../controllers/course')
-const { authJwt } = require("../middlewares");
+const { authJwt, globalValidatorCheck, courseValidators } = require("../middlewares");
 
 const router = express.Router()
 
-router.get('/courses', courseController.getCourseList)
+router.get(
+    '/courses',
+    courseController.getCourseList
+)
 
-router.get('/:courseId', courseController.getCourse)
+router.get(
+    '/:courseId',
+    courseController.getCourse
+)
 
-router.post('/save', [authJwt.verifyToken, authJwt.isModerator], courseController.addCourse)
+router.post(
+    '/save',
+    courseValidators.courseFormValidation(),
+    [globalValidatorCheck.checkForErrors, authJwt.verifyToken, authJwt.isModerator],
+    courseController.addCourse
+)
 
-router.delete('/:courseId', [authJwt.verifyToken, authJwt.isModerator], courseController.deleteCourse)
+router.delete(
+    '/:courseId',
+    [authJwt.verifyToken, authJwt.isModerator],
+    courseController.deleteCourse
+)
 
-router.put('/:courseId', [authJwt.verifyToken, authJwt.isModerator], courseController.editCourse)
+router.put(
+    '/:courseId',
+    courseValidators.courseFormValidation(),
+    [globalValidatorCheck.checkForErrors, authJwt.verifyToken, authJwt.isModerator],
+    courseController.editCourse
+)
 
 module.exports = router

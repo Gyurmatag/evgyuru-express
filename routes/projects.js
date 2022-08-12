@@ -4,8 +4,14 @@ const projectController = require('../controllers/project')
 
 const router = express.Router()
 
-router.get('/projects', projectController.getProjectList)
+router.get(
+    '/projects',
+    projectController.getProjectList
+)
 
-router.get('/:projectId', projectController.getProject)
+router.get(
+    '/:projectId',
+    projectController.getProject
+)
 
 module.exports = router

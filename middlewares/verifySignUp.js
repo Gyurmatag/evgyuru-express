@@ -1,18 +1,7 @@
-const asyncHandler = require('express-async-handler')
 const db = require("../models")
 const CustomError = require("../utils/CustomError")
+
 const ROLES = db.ROLES
-const User = db.user
-
-checkDuplicateEmail = asyncHandler(async (req, res, next) => {
-    const userByEmail = await User.findOne({ email: req.body.email })
-    if (userByEmail && !userByEmail.isNotRegisteredOnlyForCourseApply) {
-        throw new CustomError('Email already taken.', 400)
-    }
-    req.user = userByEmail
-
-    next()
-})
 
 checkRolesExisted = (req, res, next) => {
     if (req.body.roles) {
@@ -26,7 +15,6 @@ checkRolesExisted = (req, res, next) => {
     next()
 }
 const verifySignUp = {
-    checkDuplicateEmail,
     checkRolesExisted
 }
 module.exports = verifySignUp

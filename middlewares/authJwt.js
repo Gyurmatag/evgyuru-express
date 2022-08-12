@@ -1,8 +1,10 @@
 const jwt = require("jsonwebtoken")
 const asyncHandler = require("express-async-handler")
+
 const config = require("../config")
 const db = require("../models")
 const CustomError = require("../utils/CustomError")
+
 const User = db.user
 const Role = db.role
 

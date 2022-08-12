@@ -11,6 +11,7 @@ const Role = db.role
 exports.signup =  asyncHandler(async (req, res) => {
     const role = await Role.findOne({ name: 'user' } )
     const onlyForCourseApplyUser = req.user
+
     const userDoc = {
         email: req.body.email,
         fullName: req.body.fullName,
@@ -47,17 +48,7 @@ exports.signup =  asyncHandler(async (req, res) => {
 })
 
 exports.signin = asyncHandler(async (req, res) => {
-    const user = await User.findOne({ email: req.body.email }).populate([
-        'roles',
-        {
-            path: 'reservations',
-            populate: ['course']
-        }]
-    )
-
-    if (!user) {
-        throw new CustomError('User not Found.', 404)
-    }
+    const user = req.user
 
     const passwordIsValid = bcrypt.compareSync(
         req.body.password,
@@ -126,7 +117,7 @@ exports.assignRoleToUser =  asyncHandler(async (req, res) => {
 exports.claimPasswordResetKey =  asyncHandler(async (req, res) => {
     const user = await User.findOne({ email: req.body.email, isNotRegisteredOnlyForCourseApply: false })
     if (!user) {
-        throw new CustomError('error.api.invalidOrUsedPasswordResetKey', 404)
+        throw new CustomError('error.api.userNotFoundWithThisEmail', 404)
     }
     user.passwordResetKey = jwt.sign({ email: user.email }, config.AUTH_SECRET)
     await user.save()

@@ -3,7 +3,6 @@ const moment = require('moment-timezone');
 const db = require("../models")
 const CustomError = require("../utils/CustomError")
 const Course = db.course
-const Project = db.project
 
 exports.getCourseList =  asyncHandler(async (req, res) => {
     const currentPage = +req.query.page || 1
@@ -54,7 +53,6 @@ exports.getCourse = asyncHandler(async (req, res) => {
 })
 
 exports.addCourse =  asyncHandler(async (req, res) => {
-    const project = await findProjectById(req.body.project)
     const course = new Course({
         title: req.body.title,
         imageUrl: req.body.imageUrl,
@@ -64,7 +62,7 @@ exports.addCourse =  asyncHandler(async (req, res) => {
         price: req.body.price,
         occasions: req.body.occasions,
         maxGroupSize: req.body.maxGroupSize,
-        project,
+        project: req.project,
     })
     await course.save()
     res.status(201).json({ message: 'Course was saved successfully!' })
@@ -78,7 +76,6 @@ exports.deleteCourse = asyncHandler(async (req, res) => {
 
 //TODO: itt lehet majd otpimalizálni, hogy csak azt updateljem amit kell??
 exports.editCourse = asyncHandler(async (req, res) => {
-    const project = await findProjectById(req.body.project)
     const course = new Course({
         _id: req.body._id,
         title: req.body.title,
@@ -90,17 +87,9 @@ exports.editCourse = asyncHandler(async (req, res) => {
         occasions: req.body.occasions,
         maxGroupSize: req.body.maxGroupSize,
         reservations: req.body.reservations,
-        project,
+        project: req.project,
     })
     await Course.findByIdAndUpdate(req.params.courseId, course);
 
     res.status(200).json({ message: 'Course was updated successfully!' })
 })
-
-const findProjectById = async (projectId) => {
-    const project = await Project.findById(projectId)
-    if (!project) {
-        throw new CustomError('Could not find project.', 404)
-    }
-    return project
-}

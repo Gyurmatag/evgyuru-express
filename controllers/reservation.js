@@ -1,11 +1,13 @@
 const asyncHandler = require("express-async-handler")
 const jwt = require("jsonwebtoken");
 const ical = require('ical-generator');
+const moment = require("moment-timezone");
+
 const db = require("../models")
 const CustomError = require("../utils/CustomError")
 const config = require("../config");
 const { sendEmail } = require("../utils/nodemailer");
-const moment = require("moment-timezone");
+
 const User = db.user
 const Reservation = db.reservation
 const Course = db.course
@@ -161,35 +163,83 @@ exports.deleteReservation = asyncHandler(async (req, res) => {
 exports.getLoggedInUserReservationList =  asyncHandler(async (req, res) => {
     const currentPage = +req.query.page || 1
     const perPage = +req.query.limit || 5
-    const filterDateFromAfterToday = req.query.filterDateFromAfterToday
     let dateFromFilters
 
+    const filterDateFromAfterToday = (req.query.filterDateFromAfterToday).toString().trim().toLowerCase();
+    const filterDateFromAfterTodayResult = !((filterDateFromAfterToday === 'false') || (filterDateFromAfterToday === '0') || (filterDateFromAfterToday === ''));
+
     // TODO: lehetséges refakt?
-    if (filterDateFromAfterToday) {
+    if (filterDateFromAfterTodayResult) {
         dateFromFilters = {
             $gt: moment().toDate()
         }
-    } else if (filterDateFromAfterToday === false) {
+    } else if (filterDateFromAfterTodayResult === false) {
         dateFromFilters = {
             $lt: moment().toDate()
         }
     }
 
-    const reservationCount = await Reservation.find({ user: req.user._id }).countDocuments()
     const reservations = await Reservation
-        .find({
-            user: req.user._id,
-            dateFrom: dateFromFilters
-        })
-        .skip((currentPage - 1) * perPage)
-        .limit(perPage)
-        .sort({ createdAt: 'descending' })
-        .populate(['course', 'children'])
+        .aggregate([
+            {
+                $lookup: {
+                    from: Course.collection.name,
+                    localField: "course",
+                    foreignField: "_id",
+                    as: "course"
+                }
+            },
+            {
+                $lookup: {
+                    from: 'children',
+                    localField: 'children',
+                    foreignField: '_id',
+                    as: 'children'
+                }
+            },
+            {
+                $match: {
+                    $and: [
+                        {"user": req.user._id},
+                        {"course.dateFrom": dateFromFilters},
+                    ]
+                }
+            },
+            {
+                $project: {
+                    isActivated: 1,
+                    course: { $first: "$course" },
+                    children: 1
+                }
+            },
+            {
+                $facet: {
+                    paginatedResults: [
+                        {
+                            $sort : {
+                                createdAt: -1
+                            }
+                        },
+                        {
+                            $skip: (currentPage - 1) * perPage
+                        },
+                        {
+                            $limit: perPage
+                        }
+                    ],
+                    totalCount: [
+                        {
+                            $count: 'count'
+                        }
+                    ],
+                }
+            },
+        ]);
+
 
     res.status(200).json({
         message: 'Fetched user reservations successfully.',
         reservations,
-        totalItems: reservationCount
     })
 })
 
