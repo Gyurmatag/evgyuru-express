@@ -44,7 +44,7 @@ exports.signup =  asyncHandler(async (req, res) => {
         }
     }
 
-    res.status(201).json({ message: 'User was registered successfully!' })
+    res.status(201).json(user)
 })
 
 exports.signin = asyncHandler(async (req, res) => {

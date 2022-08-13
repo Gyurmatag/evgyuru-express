@@ -22,7 +22,7 @@ const signupValidation = () => {
             .isLength({ min: 10, max: 17 })
             .withMessage('Telephone number must be between 10 and 17 characters long.'),
         check('password')
-            .optional()
+            .optional({ nullable: true })
             .isLength({ min: 5 })
             .withMessage('Password must be minimum 5 characters long.'),
         check('zipCode')
