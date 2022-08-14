@@ -30,6 +30,9 @@ const signupValidation = () => {
             .withMessage('Zip code must be only numbers.')
             .isLength({ min: 4, max: 4 })
             .withMessage('Zip code must be 4 numbers long.'),
+        check('city')
+            .isLength({ min: 2, max: 100 })
+            .withMessage('City must be between 2 and 100 characters long.'),
         check('streetAddress')
             .isLength({ min: 5, max: 200 })
             .withMessage('Street address must be between 5 and 200 characters long.'),

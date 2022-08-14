@@ -18,7 +18,7 @@ body {
     padding: 10px;
     margin-bottom: 10px;
 }
-.sub-greeting {
+.sub-greeting, .action-hint-text {
     text-align: center;
     color: #4b5563;
     font-size: 12px;

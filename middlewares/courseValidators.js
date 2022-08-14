@@ -16,6 +16,17 @@ const courseFormValidation = () => {
         check('description')
             .isLength({ min: 10, max: 250 })
             .withMessage('Description must be between 10 and 250 characters long.'),
+        check('zipCode')
+            .isNumeric()
+            .withMessage('Zip code must be only numbers.')
+            .isLength({ min: 4, max: 4 })
+            .withMessage('Zip code must be 4 numbers long.'),
+        check('city')
+            .isLength({ min: 2, max: 100 })
+            .withMessage('City must be between 2 and 100 characters long.'),
+        check('streetAddress')
+            .isLength({ min: 5, max: 200 })
+            .withMessage('Street address must be between 5 and 200 characters long.'),
         check('dateFrom')
             .customSanitizer((dateTo) => moment(dateTo).format('YYYY-MM-DD HH:mm:ss'))
             .isISO8601()

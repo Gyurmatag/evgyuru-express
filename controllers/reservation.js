@@ -61,8 +61,8 @@ exports.saveReservation = asyncHandler(async (req, res) => {
             {
                 fullName: applicant.fullName,
                 courseTitle: reservation.course.title,
-                dateFrom: moment(reservation.course.dateFrom).format('YYYY.MM.DD'),
-                dateTo: moment(reservation.course.dateTo).format('YYYY.MM.DD'),
+                dateFrom: moment(reservation.course.dateFrom).format('YYYY-MM-DD'),
+                dateTo: moment(reservation.course.dateTo).format('YYYY-MM-DD'),
                 children: reservation.children,
                 confirmLink: `https://www.evgyuru.hu/courses/confirm/${reservation.activationKey}`
             },
@@ -79,7 +79,7 @@ exports.saveReservation = asyncHandler(async (req, res) => {
             end: reservation.course.dateTo,
             summary: reservation.course.title,
             description: reservation.course.title,
-            location: 'Eger, Bartók Béla tér 4., 3300',
+            location: `${reservation.course.city}, ${reservation.course.streetAddress}, ${reservation.course.zipCode}`,
             url: 'https://www.evgyuru.hu/'
         });
         const headers = {

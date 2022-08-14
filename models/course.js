@@ -15,6 +15,19 @@ const courseSchema = new Schema(
             type: String,
             required: true
         },
+        // TODO: ezt majd későbbiekben át lehetne alakítani koordinátákra, maps integrációval?
+        zipCode: {
+            type: String,
+            required: true
+        },
+        city: {
+            type: String,
+            required: true
+        },
+        streetAddress: {
+            type: String,
+            required: true
+        },
         dateFrom: {
             type: Date,
             required: true
