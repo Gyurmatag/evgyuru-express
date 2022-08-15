@@ -8,21 +8,24 @@ exports.getCourseList =  asyncHandler(async (req, res) => {
     const currentPage = +req.query.page || 1
     const perPage = +req.query.limit || 5
     const projectId = req.query.projectId
-    const filterDateFromAfterToday = req.query.filterDateFromAfterToday
     let dateFromFilters
 
+    // TODO: kiszervezni? szépíteni?
+    const filterDateFromAfterToday = (req.query.filterDateFromAfterToday).toString().trim().toLowerCase();
+    const filterDateFromAfterTodayResult = !((filterDateFromAfterToday === 'false') || (filterDateFromAfterToday === '0') || (filterDateFromAfterToday === ''));
+
     // TODO: lehetséges refakt?
-    if (filterDateFromAfterToday) {
+    if (filterDateFromAfterTodayResult) {
         dateFromFilters = {
             $gt: moment().toDate()
         }
-    } else if (filterDateFromAfterToday === false) {
+    } else if (filterDateFromAfterTodayResult === false) {
         dateFromFilters = {
             $lt: moment().toDate()
         }
     }
 
-    const courseCount = await Course.find( { project: projectId }).countDocuments()
+    const courseCount = await Course.find( { project: projectId, dateFrom: dateFromFilters }).countDocuments()
     const courses = await Course
         .find( {
             project: projectId,

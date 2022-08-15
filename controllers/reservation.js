@@ -101,8 +101,8 @@ exports.saveReservation = asyncHandler(async (req, res) => {
             {
                 fullName: applicant.fullName,
                 courseTitle: reservation.course.title,
-                dateFrom: moment(reservation.course.dateFrom).format('YYYY.MM.DD'),
-                dateTo: moment(reservation.course.dateTo).format('YYYY.MM.DD'),
+                dateFrom: moment(reservation.course.dateFrom).format('YYYY-MM-DD'),
+                dateTo: moment(reservation.course.dateTo).format('YYYY-MM-DD'),
                 children: reservation.children,
             },
             headers,
@@ -165,6 +165,7 @@ exports.getLoggedInUserReservationList =  asyncHandler(async (req, res) => {
     const perPage = +req.query.limit || 5
     let dateFromFilters
 
+    // TODO: kiszervezni? szépíteni?
     const filterDateFromAfterToday = (req.query.filterDateFromAfterToday).toString().trim().toLowerCase();
     const filterDateFromAfterTodayResult = !((filterDateFromAfterToday === 'false') || (filterDateFromAfterToday === '0') || (filterDateFromAfterToday === ''));
 
