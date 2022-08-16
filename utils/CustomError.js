@@ -5,7 +5,7 @@ class CustomError extends Error {
 
         this.name = this.constructor.name
         this.message = message || 'Something went wrong. Please try again.';
-        this.statusCode = statusCode
+        this.statusCode = statusCode || 400
     }
 }
 

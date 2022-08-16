@@ -20,6 +20,10 @@ exports.saveReservation = asyncHandler(async (req, res) => {
         throw new CustomError('Course nof Found.', 404)
     }
 
+    if (moment(course.dateFrom).isBefore(moment().toDate())) {
+        throw new CustomError('Course starting date is before current date.')
+    }
+
     const applicant = req.user || await User.findOne({ email: req.body.userEmail })
 
     const duplicatedReservation = await Reservation
