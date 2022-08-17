@@ -68,7 +68,7 @@ exports.saveReservation = asyncHandler(async (req, res) => {
                 dateFrom: moment(reservation.course.dateFrom).format('YYYY-MM-DD'),
                 dateTo: moment(reservation.course.dateTo).format('YYYY-MM-DD'),
                 children: reservation.children,
-                confirmLink: `https://www.evgyuru.hu/courses/confirm/${reservation.activationKey}`
+                confirmLink: `https://www.evgyuru.hu/kurzusok/megerosites/${reservation.activationKey}`
             },
         )
     } else {

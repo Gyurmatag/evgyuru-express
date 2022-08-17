@@ -38,7 +38,7 @@ exports.signup =  asyncHandler(async (req, res) => {
                 'signup-confirm',
                 {
                     fullName: user.fullName,
-                    signupConfirmationLink: `https://www.evgyuru.hu/auth/confirm/${user.activationKey}`,
+                    signupConfirmationLink: `https://www.evgyuru.hu/autentikacio/megerosites/${user.activationKey}`,
                 },
             )
         }
@@ -128,7 +128,7 @@ exports.claimPasswordResetKey =  asyncHandler(async (req, res) => {
         'password-change-confirm',
         {
             fullName: user.fullName,
-            signupConfirmationLink: `https://www.evgyuru.hu/auth/password-reset/${user.passwordResetKey}`,
+            signupConfirmationLink: `https://www.evgyuru.hu/autentikacio/jelszo-helyreallitas/${user.passwordResetKey}`,
         },
     )
 
