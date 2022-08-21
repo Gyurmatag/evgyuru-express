@@ -14,8 +14,8 @@ const courseFormValidation = () => {
             .isURL()
             .withMessage('Image URL must be an actual URL.'),
         check('description')
-            .isLength({ min: 10, max: 250 })
-            .withMessage('Description must be between 10 and 250 characters long.'),
+            .isLength({ min: 10 })
+            .withMessage('Description must be at least 10 characters long.'),
         check('zipCode')
             .isNumeric()
             .withMessage('Zip code must be only numbers.')
