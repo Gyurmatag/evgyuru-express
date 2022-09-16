@@ -27,5 +27,5 @@ exports.getProject = asyncHandler(async (req, res) => {
     if (!project) {
         throw new CustomError('Could not find project.', 404)
     }
-    res.status(200).json({ message: 'Project fetched successfully.', project })
+    res.status(200).json(project)
 })
