@@ -13,6 +13,21 @@ const Reservation = db.reservation
 const Course = db.course
 const Child = db.child
 
+const sendReservationAlertToModerator = async (applicant, reservation, isApplied) => {
+    // TODO: nyelvesítések, esetleges kiszevezések, dátum, stb...
+    await sendEmail(
+      config.EMAIL_USER,
+      'Évgyűrű Alaptívány foglalás értesítés',
+      'reservation-apply-delete-alert',
+      {
+          parentName: applicant.fullName,
+          courseTitle: reservation.course.title,
+          children: reservation.children,
+          isApplied
+      }
+    )
+}
+
 exports.saveReservation = asyncHandler(async (req, res) => {
     const course = await Course.findById(req.body.courseId)
 
@@ -112,6 +127,9 @@ exports.saveReservation = asyncHandler(async (req, res) => {
             headers,
             icalEvent
         )
+        // TODO: nyelvesítések, esetleges kiszevezések, dátum, stb...
+        await sendReservationAlertToModerator(applicant, reservation, true)
+
     }
 
     applicant.reservations.push(reservation)
@@ -124,7 +142,8 @@ exports.saveReservation = asyncHandler(async (req, res) => {
 })
 
 exports.activateReservation =  asyncHandler(async (req, res) => {
-    const reservation = await Reservation.findOne({ activationKey: req.params.activationKey }).populate('user')
+    const reservation =
+      await Reservation.findOne({ activationKey: req.params.activationKey }).populate(['user', 'course'])
     const user = reservation.user
     if (!user.isActivated && !user.isNotRegisteredOnlyForCourseApply) {
         const user = reservation.user
@@ -136,12 +155,13 @@ exports.activateReservation =  asyncHandler(async (req, res) => {
     }
     reservation.isActivated = true
     await reservation.save()
+    await sendReservationAlertToModerator(user, reservation, true)
     res.status(200).json({ message: 'Reservation was activated successfully!' })
 })
 
 exports.deleteReservation = asyncHandler(async (req, res) => {
     const toDeleteReservationId = req.params.reservationId
-    const reservation = await Reservation.findById(req.params.reservationId)
+    const reservation = await Reservation.findById(req.params.reservationId).populate(['course', 'children'])
 
     if (!reservation) {
         throw new CustomError('Reservation nof found.', 404)
@@ -153,6 +173,7 @@ exports.deleteReservation = asyncHandler(async (req, res) => {
         throw new CustomError('Not authorized.', 403)
     }
 
+    await sendReservationAlertToModerator(currentLoggedInUser, reservation, false)
     await Reservation.findByIdAndRemove(toDeleteReservationId);
 
     currentLoggedInUser.reservations.pull(toDeleteReservationId)
