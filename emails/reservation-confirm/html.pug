@@ -14,7 +14,7 @@ html
                 div(class="children-title") Jelentkeztetett gyermek(ek):
                 ul(class="children-list")
                     each child in children
-                        li(class="list-element")=child.name
+                        li(class="list-element")= child.name
             div(class="action-hint-text") A megerősítéshez kérlek kattints a lenti gombra:
             div(class="action-wrapper")
                 a(class="action-button" href=confirmLink) Foglalás megerősítése
