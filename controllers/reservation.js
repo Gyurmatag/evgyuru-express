@@ -143,7 +143,7 @@ exports.saveReservation = asyncHandler(async (req, res) => {
 
 exports.activateReservation =  asyncHandler(async (req, res) => {
     const reservation =
-      await Reservation.findOne({ activationKey: req.params.activationKey }).populate(['user', 'course'])
+      await Reservation.findOne({ activationKey: req.params.activationKey }).populate(['user', 'course', 'children'])
     const user = reservation.user
     if (!user.isActivated && !user.isNotRegisteredOnlyForCourseApply) {
         const user = reservation.user
