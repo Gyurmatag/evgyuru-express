@@ -56,6 +56,7 @@ exports.getCourse = asyncHandler(async (req, res) => {
 })
 
 exports.addCourse =  asyncHandler(async (req, res) => {
+    // TODO: időzóna kiszervezés
     const course = new Course({
         title: req.body.title,
         imageUrl: req.body.imageUrl,
@@ -63,8 +64,8 @@ exports.addCourse =  asyncHandler(async (req, res) => {
         zipCode: req.body.zipCode,
         city: req.body.city,
         streetAddress: req.body.streetAddress,
-        dateFrom: req.body.dateFrom,
-        dateTo: req.body.dateTo,
+        dateFrom: moment.tz(req.body.dateFrom, "Europe/Budapest"),
+        dateTo: moment.tz(req.body.dateTo, "Europe/Budapest"),
         price: req.body.price,
         occasions: req.body.occasions,
         maxGroupSize: req.body.maxGroupSize,
@@ -82,6 +83,7 @@ exports.deleteCourse = asyncHandler(async (req, res) => {
 
 //TODO: itt lehet majd otpimalizálni, hogy csak azt updateljem amit kell??
 exports.editCourse = asyncHandler(async (req, res) => {
+    // TODO: időzóna kiszervezés
     const course = new Course({
         _id: req.body._id,
         title: req.body.title,
