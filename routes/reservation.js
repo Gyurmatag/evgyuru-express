@@ -25,6 +25,12 @@ router.put(
 )
 
 router.get(
+  '/user-reservations/:reservationId',
+  [authJwt.verifyToken],
+  reservationController.getLoggedInUserReservationById
+)
+
+router.get(
     '/user-reservations',
     [authJwt.verifyToken],
     reservationController.getLoggedInUserReservationList

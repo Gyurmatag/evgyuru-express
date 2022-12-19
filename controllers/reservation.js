@@ -185,6 +185,11 @@ exports.deleteReservation = asyncHandler(async (req, res) => {
     res.status(200).json({ message: 'Reservation was deleted successfully!' })
 })
 
+exports.getLoggedInUserReservationById =  asyncHandler(async (req, res) => {
+    const reservation = await Reservation.findOne({ _id: req.reservationId, user: req.user._id }).populate(['course', 'children'])
+    res.status(200).json(reservation)
+})
+
 exports.getLoggedInUserReservationList =  asyncHandler(async (req, res) => {
     const currentPage = +req.query.page || 1
     const perPage = +req.query.limit || 5
@@ -242,7 +247,7 @@ exports.getLoggedInUserReservationList =  asyncHandler(async (req, res) => {
                 $facet: {
                     paginatedResults: [
                         {
-                            $sort : {
+                            $sort: {
                                 createdAt: -1
                             }
                         },
@@ -261,7 +266,6 @@ exports.getLoggedInUserReservationList =  asyncHandler(async (req, res) => {
                 }
             },
         ]);
-
 
     res.status(200).json({
         message: 'Fetched user reservations successfully.',

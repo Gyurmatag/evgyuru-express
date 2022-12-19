@@ -1,7 +1,7 @@
 const express = require('express')
 
 const authController = require('../controllers/auth')
-const { globalValidatorCheck, authJwt, authValidators} = require("../middlewares")
+const { globalValidatorCheck, authJwt, authValidators } = require("../middlewares")
 
 const router = express.Router()
 

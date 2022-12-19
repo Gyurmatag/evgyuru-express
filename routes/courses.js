@@ -11,6 +11,11 @@ router.get(
 )
 
 router.get(
+  '/simple-available-courses',
+  courseController.getSimpleAvailableCourseList
+)
+
+router.get(
     '/:courseId',
     courseController.getCourse
 )

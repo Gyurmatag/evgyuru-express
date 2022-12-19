@@ -1,3 +1,4 @@
+const mongoose = require('mongoose')
 const asyncHandler = require("express-async-handler")
 const moment = require('moment-timezone');
 const db = require("../models")
@@ -40,6 +41,60 @@ exports.getCourseList =  asyncHandler(async (req, res) => {
         message: 'Fetched courses successfully.',
         courses,
         totalItems: courseCount
+    })
+})
+
+exports.getSimpleAvailableCourseList =  asyncHandler(async (req, res) => {
+    const projectId = req.query.projectId
+
+    let dateFromFilters = {
+        $gt: moment().toDate()
+    }
+
+    const courses = await Course
+    .aggregate([
+        {
+            $lookup: {
+                from: 'reservations',
+                localField: 'reservations',
+                foreignField: '_id',
+                as: 'reservations'
+            }
+        },
+        {
+            $project: {
+                _id: 1,
+                title: 1,
+                dateFrom: 1,
+                project: 1,
+                isCourseFull: { $gte: [ { $size: "$reservations" }, '$maxGroupSize'] }
+            }
+        },
+        {
+            $match: {
+                $and: [
+                    { "project": mongoose.Types.ObjectId(projectId) },
+                    { "dateFrom": dateFromFilters },
+                    { "isCourseFull": false },
+                ]
+            }
+        },
+        {
+            $facet: {
+                simpleCourseListResult: [
+                    {
+                        $sort: {
+                            dateFrom: -1
+                        }
+                    }
+                ],
+            }
+        },
+    ]);
+
+    res.status(200).json({
+        message: 'Fetched simple available courses successfully.',
+        courses,
     })
 })
 
