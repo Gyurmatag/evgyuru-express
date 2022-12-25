@@ -1,6 +1,5 @@
 const asyncHandler = require("express-async-handler")
 const jwt = require("jsonwebtoken");
-const ical = require('ical-generator');
 const moment = require("moment-timezone");
 
 const db = require("../models")
@@ -224,7 +223,7 @@ exports.deleteReservation = asyncHandler(async (req, res) => {
 })
 
 exports.getLoggedInUserReservationById =  asyncHandler(async (req, res) => {
-    const reservation = await Reservation.findOne({ _id: req.reservationId, user: req.user._id }).populate(['course', 'children'])
+    const reservation = await Reservation.findOne({ _id: req.params.reservationId, user: req.user._id }).populate(['course', 'children'])
     res.status(200).json(reservation)
 })
 
