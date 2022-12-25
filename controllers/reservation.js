@@ -7,6 +7,8 @@ const db = require("../models")
 const CustomError = require("../utils/CustomError")
 const config = require("../config");
 const { sendEmail } = require("../utils/nodemailer");
+const { createCalendarEvent } = require('../utils/createCalendarEvent')
+const mongoose = require('mongoose')
 
 const User = db.user
 const Reservation = db.reservation
@@ -29,11 +31,7 @@ const sendReservationAlertToModerator = async (applicant, reservation, isApplied
 }
 
 exports.saveReservation = asyncHandler(async (req, res) => {
-    const course = await Course.findById(req.body.courseId)
-
-    if (!course) {
-        throw new CustomError('Course nof Found.', 404)
-    }
+    const course = req.course;
 
     if (moment(course.dateFrom).isBefore(moment().toDate())) {
         throw new CustomError('Course starting date is before current date.')
@@ -87,31 +85,7 @@ exports.saveReservation = asyncHandler(async (req, res) => {
             },
         )
     } else {
-        // TODO: kiszervezni ezt a calendaros cuccot, szépíteni
-        const calendar = ical({ name: reservation.course.title });
-        calendar.createEvent({
-            organizer: {
-                name: 'Évgyűrű Alapítvány',
-                email: 'info@evgyuru.hu'
-            },
-            start: reservation.course.dateFrom,
-            end: reservation.course.dateTo,
-            summary: reservation.course.title,
-            description: reservation.course.title,
-            location: `${reservation.course.city}, ${reservation.course.streetAddress}, ${reservation.course.zipCode}`,
-            url: 'https://www.evgyuru.hu/'
-        });
-        const headers = {
-            'x-invite': {
-                prepared: true,
-                value: reservation._id
-            }
-        }
-        const icalEvent = {
-            filename: 'invite.ics',
-            method: 'PUBLISH',
-            content: calendar.toString()
-        }
+        const { headers, icalEvent } = createCalendarEvent(reservation.course, reservation._id)
         // TODO: nyelvesítések, esetleges kiszevezések, dátum, stb...
         await sendEmail(
             applicant.email,
@@ -141,6 +115,70 @@ exports.saveReservation = asyncHandler(async (req, res) => {
     res.status(201).json(reservation)
 })
 
+exports.editReservation = asyncHandler(async (req, res) => {
+    const oldReservation = await Reservation.findById(req.params.reservationId).populate(['course', 'children'])
+
+    if (!oldReservation) {
+        throw new CustomError('Old reservation not found.', 404)
+    }
+
+    const currentLoggedInUser = req.user
+
+    if (oldReservation.user.toString() !== currentLoggedInUser._id.toString()) {
+        throw new CustomError('Not authorized.', 403)
+    }
+
+    const course = req.course;
+
+    const childrenInsideReservation = oldReservation.children.filter(child => req.body.childrenIdList.some(childrenId => mongoose.Types.ObjectId(childrenId).equals(child._id)))
+
+    if (!childrenInsideReservation.length) {
+        throw new CustomError('Children not found inside reservation.', 404)
+    }
+
+    const reservationToSave = new Reservation({
+        course: course._id,
+        user: currentLoggedInUser._id,
+        children: childrenInsideReservation,
+        activationKey: '',
+        isActivated: true,
+    })
+    const reservation = await (await reservationToSave.save()).populate(['course', 'children'])
+
+    const noNeedToKeepOldReservation = oldReservation.children.length === childrenInsideReservation.length
+
+    if (noNeedToKeepOldReservation) {
+        await Reservation.findByIdAndRemove(oldReservation._id);
+    } else {
+        const childrenInsideReservationIds = childrenInsideReservation.map((children) => children._id);
+        oldReservation.children = oldReservation.children.filter((children) => !childrenInsideReservationIds.includes(children._id));
+        await oldReservation.save()
+    }
+
+    const { headers, icalEvent } = createCalendarEvent(reservation.course, reservation._id)
+
+    // TODO: nyelvesítések, esetleges kiszevezések, dátum, stb...
+    // TODO: régi kurzusról infók legyenek itt
+    await sendEmail(
+      currentLoggedInUser.email,
+      'Évgyűrű Alaptívány sikeres kurzus foglalás módosítás',
+      'reservation-success',
+      {
+          fullName: currentLoggedInUser.fullName,
+          courseTitle: reservation.course.title,
+          dateFrom: moment(reservation.course.dateFrom).format('YYYY-MM-DD'),
+          dateTo: moment(reservation.course.dateTo).format('YYYY-MM-DD'),
+          children: reservation.children,
+      },
+      headers,
+      icalEvent
+    )
+    await sendReservationAlertToModerator(currentLoggedInUser, reservation, true)
+    res.status(201).json({ message: 'success.api.reservationUpdatedSuccessfully' })
+
+})
+
+
 exports.activateReservation =  asyncHandler(async (req, res) => {
     const reservation =
       await Reservation.findOne({ activationKey: req.params.activationKey }).populate(['user', 'course', 'children'])
@@ -164,7 +202,7 @@ exports.deleteReservation = asyncHandler(async (req, res) => {
     const reservation = await Reservation.findById(req.params.reservationId).populate(['course', 'children'])
 
     if (!reservation) {
-        throw new CustomError('Reservation nof found.', 404)
+        throw new CustomError('Reservation not found.', 404)
     }
 
     const currentLoggedInUser = req.user

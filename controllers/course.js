@@ -46,6 +46,7 @@ exports.getCourseList =  asyncHandler(async (req, res) => {
 
 exports.getSimpleAvailableCourseList =  asyncHandler(async (req, res) => {
     const projectId = req.query.projectId
+    const excludedCourseId = req.query.excludedCourseId
 
     let dateFromFilters = {
         $gt: moment().toDate()
@@ -66,13 +67,20 @@ exports.getSimpleAvailableCourseList =  asyncHandler(async (req, res) => {
                 _id: 1,
                 title: 1,
                 dateFrom: 1,
+                dateTo: 1,
                 project: 1,
+                imageUrl: 1,
                 isCourseFull: { $gte: [ { $size: "$reservations" }, '$maxGroupSize'] }
             }
         },
         {
             $match: {
                 $and: [
+                    {
+                        "_id": {
+                            $ne: mongoose.Types.ObjectId(excludedCourseId)
+                        }
+                    },
                     { "project": mongoose.Types.ObjectId(projectId) },
                     { "dateFrom": dateFromFilters },
                     { "isCourseFull": false },
