@@ -311,8 +311,8 @@ exports.getLoggedInUserReservationList =  asyncHandler(async (req, res) => {
 })
 
 exports.findReservations =  asyncHandler(async (req, res) => {
-    const currentPage = +req.query.page || 1
-    const perPage = +req.query.limit || 5
+    const currentPage = +req.query.page === 0 ? 0 : +req.query.page || 1;
+    const perPage = +req.query.limit === 0 ? 0 : +req.query.limit || 5;
 
     const reservationCount = await Reservation.find({ course: req.query.courseId }).countDocuments()
     const reservations = await Reservation
